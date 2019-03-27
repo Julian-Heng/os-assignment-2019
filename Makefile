@@ -5,7 +5,7 @@ all: dirs
 	$(CC) $(CFLAGS) -o ./build/scheduler ./src/scheduler.c
 
 clean:
-	$(RM) -rf ./build
+	$(RM) -r ./build
 
 dirs:
 	if [ ! -e "./build" ]; then \
