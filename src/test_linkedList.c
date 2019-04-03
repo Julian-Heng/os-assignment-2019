@@ -100,9 +100,9 @@ int testListConstructor(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing initList() with isEmpty(): ");
+        fprintf(stdout, "Testing initList() with isListEmpty(): ");
         list = initList();
-        status = printResult(!! list && isEmpty(list));
+        status = printResult(!! list && isListEmpty(list));
         free(list);
         list = NULL;
     }
@@ -673,13 +673,18 @@ int testListRemove(void)
     LinkedList* list;
     LinkedListNode* node;
 
+    void* voidPtr;
+
+    int ret;
     int i;
     int* j;
 
     int status = TRUE;
 
+    voidPtr = NULL;
     list = NULL;
     node = NULL;
+    ret = 0;
 
     header("LinkedList Remove");
 
@@ -687,7 +692,8 @@ int testListRemove(void)
     {
         fprintf(stdout, "Testing removeFirst() on an empty list: ");
         list = initList();
-        status = printResult(! removeFirst(list));
+        removeFirst(list, &voidPtr, &ret);
+        status = printResult(! voidPtr && ret == -1);
         free(list);
         list = NULL;
     }
@@ -698,9 +704,10 @@ int testListRemove(void)
         list = initList();
         i = 5;
         insertFirst(list, &i, FALSE);
-        node = removeFirst(list);
-        status = printResult(!! node &&
-                             *(int*)(node -> value) == i);
+        node = removeFirst(list, &voidPtr, &ret);
+        status = printResult(!! voidPtr &&
+                             *(int*)(voidPtr) == i &&
+                             ! ret);
 
         free(node);
         node = NULL;
@@ -719,11 +726,14 @@ int testListRemove(void)
             j = (int*)malloc(sizeof(int));
             *j = i;
             insertLast(list, j, TRUE);
+            peekFirst(list, &voidPtr, &ret);
         }
 
-        node = removeFirst(list);
-        status = printResult(!! node &&
-                             *(int*)(node -> value) == 0);
+        node = removeFirst(list, &voidPtr, &ret);
+
+        status = printResult(!! voidPtr &&
+                             *(int*)(voidPtr) == 0 &&
+                             ret);
 
         while (list -> head != NULL)
         {
@@ -748,7 +758,8 @@ int testListRemove(void)
     {
         fprintf(stdout, "Testing removeLast() on an empty list: ");
         list = initList();
-        status = printResult(! removeLast(list));
+        removeLast(list, &voidPtr, &ret);
+        status = printResult(! voidPtr && ret == -1);
         free(list);
         list = NULL;
     }
@@ -759,11 +770,15 @@ int testListRemove(void)
         list = initList();
         i = 5;
         insertLast(list, &i, FALSE);
-        node = removeLast(list);
-        status = printResult(!! node &&
-                             *(int*)(node -> value) == i);
+        node = removeLast(list, &voidPtr, &ret);
+        status = printResult(!! voidPtr &&
+                             *(int*)(voidPtr) == i &&
+                             ! ret);
 
         free(node);
+        node = NULL;
+
+        free(list -> head);
         node = NULL;
 
         free(list);
@@ -782,9 +797,10 @@ int testListRemove(void)
             insertLast(list, j, TRUE);
         }
 
-        node = removeLast(list);
-        status = printResult(!! node &&
-                             *(int*)(node -> value) == 4);
+        removeLast(list, &voidPtr, &ret);
+        status = printResult(!! voidPtr &&
+                             *(int*)(voidPtr) == 4 &&
+                             ret);
 
         while (list -> head != NULL)
         {
@@ -814,6 +830,7 @@ int testListPeek(void)
     LinkedListNode* node;
 
     void* voidPtr;
+    int ret;
     int i;
     int* j;
 
@@ -829,7 +846,9 @@ int testListPeek(void)
     {
         fprintf(stdout, "Testing peekFirst() on an empty list: ");
         list = initList();
-        status = printResult(! peekFirst(list));
+        peekFirst(list, &voidPtr, &ret);
+        status = printResult(! voidPtr &&
+                             ret == -1);
         free(list);
         list = NULL;
     }
@@ -840,9 +859,10 @@ int testListPeek(void)
         list = initList();
         i = 5;
         insertFirst(list, &i, FALSE);
-        voidPtr = peekFirst(list);
+        peekFirst(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
-                             *(int*)(voidPtr) == i);
+                             *(int*)(voidPtr) == i &&
+                             ! ret);
 
         voidPtr = NULL;
 
@@ -865,9 +885,10 @@ int testListPeek(void)
             insertLast(list, j, TRUE);
         }
 
-        voidPtr = peekFirst(list);
+        peekFirst(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
-                             *(int*)(voidPtr) == 0);
+                             *(int*)(voidPtr) == 0 &&
+                             ret);
 
         voidPtr = NULL;
 
@@ -894,7 +915,9 @@ int testListPeek(void)
     {
         fprintf(stdout, "Testing peekLast() on an empty list: ");
         list = initList();
-        status = printResult(! peekLast(list));
+        peekLast(list, &voidPtr, &ret);
+        status = printResult(! voidPtr &&
+                             ret == -1);
         free(list);
         list = NULL;
     }
@@ -905,9 +928,10 @@ int testListPeek(void)
         list = initList();
         i = 5;
         insertLast(list, &i, FALSE);
-        voidPtr = peekLast(list);
+        peekLast(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
-                             *(int*)(voidPtr) == i);
+                             *(int*)(voidPtr) == i &&
+                             ! ret);
 
         voidPtr = NULL;
 
@@ -930,9 +954,12 @@ int testListPeek(void)
             insertLast(list, j, TRUE);
         }
 
-        voidPtr = peekLast(list);
+        peekLast(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
-                             *(int*)(voidPtr) == 4);
+                             *(int*)(voidPtr) == 4 &&
+                             ret);
+
+        voidPtr = NULL;
 
         while (list -> head != NULL)
         {

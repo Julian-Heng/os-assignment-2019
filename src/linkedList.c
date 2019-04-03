@@ -3,8 +3,6 @@
  * Author:   Juilan Heng (19473701)
  * Purpose:  Provide the initialisation of a doubly linked double ended
  *           linked list as well as several utility functions.
- *
- * Last Modified: 2018-10-20T15:02:03+08:00
  **/
 
 #include <stdlib.h>
@@ -26,10 +24,7 @@ LinkedListNode* initNode(void* newValue, int isMalloc)
     LinkedListNode* newNode;
 
     /* Allocate memory in the heap for a linked list node */
-    newNode = (LinkedListNode*)malloc(sizeof(LinkedListNode));
-
-    /* Check if malloc failed */
-    if (newNode)
+    if ((newNode = (LinkedListNode*)malloc(sizeof(LinkedListNode))))
     {
         /* Set default values */
         newNode -> next = NULL;
@@ -46,10 +41,7 @@ LinkedList* initList(void)
     LinkedList* newList;
 
     /* Allocate memory in the heap for a linked list */
-    newList = (LinkedList*)malloc(sizeof(LinkedList));
-
-    /* Check if malloc failed */
-    if (newList)
+    if ((newList = (LinkedList*)malloc(sizeof(LinkedList))))
     {
         /* Set default values */
         newList -> head = NULL;
@@ -68,7 +60,7 @@ void insertFirst(LinkedList* list, void* newValue, int isMalloc)
     newNode = initNode(newValue, isMalloc);
 
     /* Special case for empty list */
-    if (list && isEmpty(list))
+    if (list && isListEmpty(list))
     {
         list -> head = newNode;
         list -> tail = newNode;
@@ -85,7 +77,7 @@ void insertFirst(LinkedList* list, void* newValue, int isMalloc)
         list -> head = newNode;
     }
 
-    list -> length += 1;
+    (list -> length)++;
 }
 
 void insertLast(LinkedList* list, void* newValue, int isMalloc)
@@ -96,7 +88,7 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
     newNode = initNode(newValue, isMalloc);
 
     /* Special case for empty list */
-    if (list && isEmpty(list))
+    if (list && isListEmpty(list))
     {
         list -> head = newNode;
         list -> tail = newNode;
@@ -113,22 +105,23 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
         list -> tail = newNode;
     }
 
-    list -> length += 1;
+    (list -> length)++;
 }
 
-LinkedListNode* removeFirst(LinkedList* list)
+/**
+ * Remove the first node in the list We return a pointer to a node because we
+ * cannot free it within this function. Thus the calling function will need to
+ * perform the freeing of the node. If we free the node within this function,
+ * we loose access to the void pointer within the node
+ **/
+LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    LinkedListNode* remove;
+    LinkedListNode* node = NULL;
+    peekFirst(list, voidPtr, isMalloc);
 
-    remove = NULL;
-
-    /* Check if list is not null and not empty */
-    if (list && ! isEmpty(list))
+    if (list && ! isListEmpty(list))
     {
-        /* Get the first node */
-        remove = list -> head;
-
-        /* Special case for a single item linked list */
+        node = list -> head;
         if (list -> head == list -> tail)
         {
             list -> head = NULL;
@@ -139,25 +132,23 @@ LinkedListNode* removeFirst(LinkedList* list)
             setNextInList(list -> head);
         }
 
-        list -> length -= 1;
+        (list -> length)--;
     }
 
-    return remove;
+    return node;
 }
 
-LinkedListNode* removeLast(LinkedList* list)
+/**
+ * Same as removeFirst(), except we do it to the last node in the list
+ **/
+LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    LinkedListNode* remove;
+    LinkedListNode* node = NULL;
+    peekLast(list, voidPtr, isMalloc);
 
-    remove = NULL;
-
-    /* Check if list is not null and not empty */
-    if (list && ! isEmpty(list))
+    if (list && ! isListEmpty(list))
     {
-        /* Get the last node */
-        remove = list -> tail;
-
-        /* Special case for a single item linked list */
+        node = list -> tail;
         if (list -> head == list -> tail)
         {
             list -> head = NULL;
@@ -168,20 +159,46 @@ LinkedListNode* removeLast(LinkedList* list)
             setPrevInList(list -> tail);
         }
 
-        list -> length -= 1;
+        (list -> length)--;
     }
 
-    return remove;
+    return node;
 }
 
-void* peekFirst(LinkedList* list)
+/**
+ * Getting the value in the first node without removing it from the list
+ * voidPtr is where the value is stored and isMalloc is a boolean that
+ * determines if it is stored on the heap or stack
+ **/
+void peekFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    return (list && ! isEmpty(list)) ? list -> head -> value : NULL;
+    if (list && ! isListEmpty(list))
+    {
+        *voidPtr = list -> head -> value;
+        *isMalloc = list -> head -> isMalloc;
+    }
+    else
+    {
+        *voidPtr = NULL;
+        *isMalloc = -1;
+    }
 }
 
-void* peekLast(LinkedList* list)
+/**
+ * Same as peekFirst() except it peeks the end of the list
+ **/
+void peekLast(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    return (list && ! isEmpty(list)) ? list -> tail -> value : NULL;
+    if (list && ! isListEmpty(list))
+    {
+        *voidPtr = list -> tail -> value;
+        *isMalloc = list -> tail -> isMalloc;
+    }
+    else
+    {
+        *voidPtr = NULL;
+        *isMalloc = -1;
+    }
 }
 
 int getListLength(LinkedList* list)
@@ -193,7 +210,7 @@ void clearList(LinkedList** list)
 {
     if (*list)
     {
-        if (! isEmpty(*list))
+        if (! isListEmpty(*list))
         {
             clearListRecurse(&((*list) -> head));
         }
@@ -260,7 +277,7 @@ static void setPrevInList(LinkedListNode* node)
     }
 }
 
-int isEmpty(LinkedList* list)
+int isListEmpty(LinkedList* list)
 {
     return (list &&
             (! (list -> head)) &&

@@ -55,12 +55,12 @@ LinkedListNode* initNode(void* newValue, int malloc);
 LinkedList* initList();
 void insertFirst(LinkedList* list, void* newValue, int malloc);
 void insertLast(LinkedList* list, void* newValue, int malloc);
-LinkedListNode* removeFirst(LinkedList* list);
-LinkedListNode* removeLast(LinkedList* list);
-void* peekFirst(LinkedList* list);
-void* peekLast(LinkedList* list);
+LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc);
+LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc);
+void peekFirst(LinkedList* list, void** voidPtr, int* isMalloc);
+void peekLast(LinkedList* list, void** voidPtr, int* isMalloc);
 int getListLength(LinkedList* list);
 void clearList(LinkedList** list);
-int isEmpty(LinkedList* list);
+int isListEmpty(LinkedList* list);
 
 #endif /* End of linkedList.h */
