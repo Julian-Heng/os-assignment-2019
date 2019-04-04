@@ -17,7 +17,7 @@ queue: linkedList
 file: dirs
 	$(CC) $(CFLAGS) -o $(OBJ)/file.o -c $(SRC)/file.c
 
-test: runtest_linkedList runtest_queue
+test: runtest_linkedList runtest_queue test_file
 
 runtest_linkedList: test_linkedList
 	$(BUILD)/test_linkedList

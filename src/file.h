@@ -3,7 +3,7 @@
 
 typedef struct File
 {
-    char** arr;
+    char** d;
     int rows;
     int cols;
 } File;

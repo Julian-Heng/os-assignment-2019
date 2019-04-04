@@ -20,7 +20,7 @@ int main(int argc, char** argv)
             read_file(argv[i], &f);
             for (j = 0; j < f.rows; j++)
             {
-                fprintf(stdout, "%s\n", (f.arr)[j]);
+                fprintf(stdout, "%s\n", (f.d)[j]);
             }
 
             fprintf(stdout, "\nFile rows: %d\n", f.rows);
@@ -28,12 +28,12 @@ int main(int argc, char** argv)
 
             for (j = 0; j < f.rows; j++)
             {
-                free((f.arr)[j]);
-                (f.arr)[j] = NULL;
+                free((f.d)[j]);
+                (f.d)[j] = NULL;
             }
 
-            free(f.arr);
-            f.arr = NULL;
+            free(f.d);
+            f.d = NULL;
         }
     }
 

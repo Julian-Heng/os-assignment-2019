@@ -32,18 +32,18 @@ void read_file(char* filename, File* file)
         }
 
         fseek(f, 0, SEEK_SET);
-        file -> arr = (char**)malloc(rows * sizeof(char*));
+        file -> d = (char**)malloc(rows * sizeof(char*));
 
         for (i = 0; i < rows; i++)
         {
-            (file -> arr)[i] = (char*)malloc(cols + 1 * sizeof(char));
-            memset((file -> arr)[i], '\0', cols + 1);
+            (file -> d)[i] = (char*)malloc(cols + 1 * sizeof(char));
+            memset((file -> d)[i], '\0', cols + 1);
         }
 
         i = -1;
-        while ((++i < rows) && fgets((file -> arr)[i], cols + 1, f))
+        while ((++i < rows) && fgets((file -> d)[i], cols + 1, f))
         {
-            (file -> arr)[i][strcspn((file -> arr)[i], "\n")] = '\0';
+            (file -> d)[i][strcspn((file -> d)[i], "\n")] = '\0';
         }
 
         file -> rows = rows;
