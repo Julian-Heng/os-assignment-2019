@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "linkedList.h"
-#include "queue.h"
+#include "../linkedList.h"
+#include "../queue.h"
 #include "test_queue.h"
 
 #define FALSE 0

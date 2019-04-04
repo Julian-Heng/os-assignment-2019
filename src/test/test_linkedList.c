@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "linkedList.h"
+#include "../linkedList.h"
 #include "test_linkedList.h"
 
 #define FALSE 0

@@ -1,40 +1,48 @@
 CC = gcc
 CFLAGS = -g -Wall -Werror -ansi -pedantic
+BUILD = ./build
+OBJ = $(BUILD)/obj
+SRC = ./src
+TEST = $(SRC)/test
 
 all: dirs
-	$(CC) $(CFLAGS) -o ./build/scheduler ./src/scheduler.c
+	$(CC) $(CFLAGS) -o $(BUILD)/scheduler $(SRC)/scheduler.c
 
 linkedList: dirs
-	$(CC) $(CFLAGS) -o ./build/obj/linkedList.o -c ./src/linkedList.c
+	$(CC) $(CFLAGS) -o $(OBJ)/linkedList.o -c $(SRC)/linkedList.c
 
 queue: linkedList
-	$(CC) $(CFLAGS) -o ./build/obj/queue.o -c ./src/queue.c
+	$(CC) $(CFLAGS) -o $(OBJ)/queue.o -c $(SRC)/queue.c
 
 test: runtest_linkedList runtest_queue
 
 runtest_linkedList: test_linkedList
-	./build/test_linkedList
-	valgrind ./build/test_linkedList
+	$(BUILD)/test_linkedList
+	valgrind $(BUILD)/test_linkedList
 
 runtest_queue: test_queue
-	./build/test_queue
-	valgrind ./build/test_queue
+	$(BUILD)/test_queue
+	valgrind $(BUILD)/test_queue
 
 test_linkedList: linkedList
-	$(CC) $(CFLAGS) -o ./build/obj/test_linkedList.o -c ./src/test_linkedList.c
-	$(CC) ./build/obj/linkedList.o ./build/obj/test_linkedList.o -o ./build/test_linkedList
+	$(CC) $(CFLAGS) -o $(OBJ)/test_linkedList.o -c $(TEST)/test_linkedList.c
+	$(CC) 	$(OBJ)/linkedList.o \
+			$(OBJ)/test_linkedList.o \
+			-o $(BUILD)/test_linkedList
 
 test_queue: queue
-	$(CC) $(CFLAGS) -o ./build/obj/test_queue.o -c ./src/test_queue.c
-	$(CC) ./build/obj/linkedList.o ./build/obj/queue.o ./build/obj/test_queue.o -o ./build/test_queue
+	$(CC) $(CFLAGS) -o $(OBJ)/test_queue.o -c $(TEST)/test_queue.c
+	$(CC) 	$(OBJ)/linkedList.o \
+			$(OBJ)/queue.o $(OBJ)/test_queue.o \
+			-o $(BUILD)/test_queue
 
 clean:
-	$(RM) -rv ./build
+	$(RM) -rv $(BUILD)
 
 dirs:
-	if [ ! -e "./build" ]; then \
-		mkdir ./build; \
+	if [ ! -e "$(BUILD)" ]; then \
+		mkdir $(BUILD); \
 	fi
-	if [ ! -e "./build/obj" ]; then \
-		mkdir ./build/obj; \
+	if [ ! -e "$(OBJ)" ]; then \
+		mkdir $(OBJ); \
 	fi
