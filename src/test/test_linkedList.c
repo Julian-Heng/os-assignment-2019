@@ -46,7 +46,7 @@ int testListConstructor(void)
     {
         fprintf(stdout, "Testing initNode() with no value and not malloc: ");
         node = initNode(NULL, FALSE);
-        status = printResult(!! node && ! (node -> isMalloc));
+        status = printResult(!! node && ! (node->isMalloc));
         free(node);
         node = NULL;
     }
@@ -55,7 +55,7 @@ int testListConstructor(void)
     {
         fprintf(stdout, "Testing initNode() with no value and is malloc: ");
         node = initNode(NULL, TRUE);
-        status = printResult(!! node && node -> isMalloc);
+        status = printResult(!! node && node->isMalloc);
         free(node);
         node = NULL;
     }
@@ -66,8 +66,8 @@ int testListConstructor(void)
         str = "test string";
         node = initNode(str, FALSE);
         status = printResult(!! node &&
-                             ! (node -> isMalloc) &&
-                             ! strcmp(node -> value, "test string"));
+                             ! (node->isMalloc) &&
+                             ! strcmp(node->value, "test string"));
         str = "";
         free(node);
         node = NULL;
@@ -80,8 +80,8 @@ int testListConstructor(void)
         strncpy(str, "test string", strlen("test string") + 1);
         node = initNode(str, TRUE);
         status = printResult(!! node &&
-                             (node -> isMalloc) &&
-                             ! strcmp(node -> value, "test string"));
+                             (node->isMalloc) &&
+                             ! strcmp(node->value, "test string"));
         free(str);
         str = NULL;
 
@@ -93,7 +93,7 @@ int testListConstructor(void)
     {
         fprintf(stdout, "Testing initList() with no nodes: ");
         list = initList();
-        status = printResult(!! list && list -> length == 0);
+        status = printResult(!! list && list->length == 0);
         free(list);
         list = NULL;
     }
@@ -134,14 +134,14 @@ int testListInsert(void)
         insertFirst(list, NULL, FALSE);
 
         status = printResult(!! list &&
-                             list -> length == 1 &&
-                             list -> head &&
-                             list -> tail &&
-                             list -> head == list -> tail &&
-                             ! list -> head -> value);
+                             list->length == 1 &&
+                             list->head &&
+                             list->tail &&
+                             list->head == list->tail &&
+                             ! list->head->value);
 
-        free(list -> head);
-        list -> head = NULL;
+        free(list->head);
+        list->head = NULL;
 
         free(list);
         list = NULL;
@@ -156,17 +156,17 @@ int testListInsert(void)
         insertFirst(list, str, FALSE);
 
         status = printResult(!! list &&
-                             list -> length == 1 &&
-                             list -> head &&
-                             list -> tail &&
-                             list -> head == list -> tail &&
-                             list -> head -> value &&
-                             ! list -> head -> isMalloc &&
-                             ! strcmp(list -> head -> value, "test string"));
+                             list->length == 1 &&
+                             list->head &&
+                             list->tail &&
+                             list->head == list->tail &&
+                             list->head->value &&
+                             ! list->head->isMalloc &&
+                             ! strcmp(list->head->value, "test string"));
 
         str = "";
-        free(list -> head);
-        list -> head = NULL;
+        free(list->head);
+        list->head = NULL;
 
         free(list);
         list = NULL;
@@ -182,19 +182,19 @@ int testListInsert(void)
 
         insertFirst(list, str, TRUE);
         status = printResult(!! list &&
-                             list -> length == 1 &&
-                             list -> head &&
-                             list -> tail &&
-                             list -> head == list -> tail &&
-                             list -> head -> value &&
-                             list -> head -> isMalloc &&
-                             ! strcmp(list -> head -> value, "test string"));
+                             list->length == 1 &&
+                             list->head &&
+                             list->tail &&
+                             list->head == list->tail &&
+                             list->head->value &&
+                             list->head->isMalloc &&
+                             ! strcmp(list->head->value, "test string"));
 
         free(str);
         str = NULL;
 
-        free(list -> head);
-        list -> head = NULL;
+        free(list->head);
+        list->head = NULL;
 
         free(list);
         list = NULL;
@@ -216,10 +216,10 @@ int testListInsert(void)
 
         while (node != NULL && i++ < 5 && status)
         {
-            if (!! list && list -> length == 5 && ! list -> head -> value)
+            if (!! list && list->length == 5 && ! list->head->value)
             {
                 status = TRUE;
-                node = node -> next;
+                node = node->next;
             }
             else
             {
@@ -229,10 +229,10 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
             free(node);
             node = NULL;
         }
@@ -260,12 +260,12 @@ int testListInsert(void)
         while (node != NULL && i++ < 5 && status)
         {
             if (!! list &&
-                list -> length == 5 &&
-                ! node -> isMalloc &&
-                ! strcmp(node -> value, "test string"))
+                list->length == 5 &&
+                ! node->isMalloc &&
+                ! strcmp(node->value, "test string"))
             {
                 status = TRUE;
-                node = node -> next;
+                node = node->next;
             }
             else
             {
@@ -275,10 +275,10 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
             free(node);
             node = NULL;
         }
@@ -311,12 +311,12 @@ int testListInsert(void)
             sprintf(str, "test string %d", i);
 
             if (!! list &&
-                list -> length == 5 &&
-                node -> isMalloc &&
-                ! strcmp(node -> value, str))
+                list->length == 5 &&
+                node->isMalloc &&
+                ! strcmp(node->value, str))
             {
                 status = TRUE;
-                node = node -> next;
+                node = node->next;
             }
             else
             {
@@ -329,13 +329,13 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            free(node -> value);
-            node -> value = NULL;
+            free(node->value);
+            node->value = NULL;
 
             free(node);
             node = NULL;
@@ -376,12 +376,12 @@ int testListInsert(void)
             if (i & 1)
             {
                 if (!! list &&
-                    list -> length == 5 &&
-                    ! node -> isMalloc &&
-                    ! strcmp(node -> value, "test string"))
+                    list->length == 5 &&
+                    ! node->isMalloc &&
+                    ! strcmp(node->value, "test string"))
                 {
                     status = TRUE;
-                    node = node -> next;
+                    node = node->next;
                 }
                 else
                 {
@@ -395,12 +395,12 @@ int testListInsert(void)
                 sprintf(str, "test string %d", i);
 
                 if (!! list &&
-                    list -> length == 5 &&
-                    node -> isMalloc &&
-                    ! strcmp(node -> value, str))
+                    list->length == 5 &&
+                    node->isMalloc &&
+                    ! strcmp(node->value, str))
                 {
                     status = TRUE;
-                    node = node -> next;
+                    node = node->next;
                 }
                 else
                 {
@@ -414,15 +414,15 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            if (node -> isMalloc)
+            if (node->isMalloc)
             {
-                free(node -> value);
-                node -> value = NULL;
+                free(node->value);
+                node->value = NULL;
             }
 
             free(node);
@@ -448,10 +448,10 @@ int testListInsert(void)
 
         while (node != NULL && i++ < 100000 && status)
         {
-            if (!! list && list -> length == 100000 && ! list -> head -> value)
+            if (!! list && list->length == 100000 && ! list->head->value)
             {
                 status = TRUE;
-                node = node -> next;
+                node = node->next;
             }
             else
             {
@@ -461,10 +461,10 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
             free(node);
             node = NULL;
         }
@@ -491,12 +491,12 @@ int testListInsert(void)
         while (node != NULL && i++ < 100000 && status)
         {
             if (!! list &&
-                list -> length == 100000 &&
-                ! node -> isMalloc &&
-                ! strcmp(node -> value, "test string"))
+                list->length == 100000 &&
+                ! node->isMalloc &&
+                ! strcmp(node->value, "test string"))
             {
                 status = TRUE;
-                node = node -> next;
+                node = node->next;
             }
             else
             {
@@ -506,10 +506,10 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
             free(node);
             node = NULL;
         }
@@ -543,12 +543,12 @@ int testListInsert(void)
             sprintf(str, "test string %d", i);
 
             if (!! list &&
-                list -> length == 100000 &&
-                node -> isMalloc &&
-                ! strcmp(node -> value, str))
+                list->length == 100000 &&
+                node->isMalloc &&
+                ! strcmp(node->value, str))
             {
                 status = TRUE;
-                node = node -> next;
+                node = node->next;
             }
             else
             {
@@ -561,13 +561,13 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            free(node -> value);
-            node -> value = NULL;
+            free(node->value);
+            node->value = NULL;
 
             free(node);
             node = NULL;
@@ -608,12 +608,12 @@ int testListInsert(void)
             if (i & 1)
             {
                 if (!! list &&
-                    list -> length == 100000 &&
-                    ! node -> isMalloc &&
-                    ! strcmp(node -> value, "test string"))
+                    list->length == 100000 &&
+                    ! node->isMalloc &&
+                    ! strcmp(node->value, "test string"))
                 {
                     status = TRUE;
-                    node = node -> next;
+                    node = node->next;
                 }
                 else
                 {
@@ -627,12 +627,12 @@ int testListInsert(void)
                 sprintf(str, "test string %d", i);
 
                 if (!! list &&
-                    list -> length == 100000 &&
-                    node -> isMalloc &&
-                    ! strcmp(node -> value, str))
+                    list->length == 100000 &&
+                    node->isMalloc &&
+                    ! strcmp(node->value, str))
                 {
                     status = TRUE;
-                    node = node -> next;
+                    node = node->next;
                 }
                 else
                 {
@@ -646,15 +646,15 @@ int testListInsert(void)
 
         status = printResult(status);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            if (node -> isMalloc)
+            if (node->isMalloc)
             {
-                free(node -> value);
-                node -> value = NULL;
+                free(node->value);
+                node->value = NULL;
             }
 
             free(node);
@@ -740,15 +740,15 @@ int testListRemove(void)
         free(node);
         node = NULL;
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            if (node -> isMalloc)
+            if (node->isMalloc)
             {
-                free(node -> value);
-                node -> value = NULL;
+                free(node->value);
+                node->value = NULL;
             }
 
             free(node);
@@ -783,7 +783,7 @@ int testListRemove(void)
         free(node);
         node = NULL;
 
-        free(list -> head);
+        free(list->head);
         node = NULL;
 
         free(list);
@@ -807,15 +807,15 @@ int testListRemove(void)
                              *(int*)(voidPtr) == 4 &&
                              ret);
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            if (node -> isMalloc)
+            if (node->isMalloc)
             {
-                free(node -> value);
-                node -> value = NULL;
+                free(node->value);
+                node->value = NULL;
             }
 
             free(node);
@@ -871,7 +871,7 @@ int testListPeek(void)
 
         voidPtr = NULL;
 
-        free(list -> head);
+        free(list->head);
         node = NULL;
 
         free(list);
@@ -897,15 +897,15 @@ int testListPeek(void)
 
         voidPtr = NULL;
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            if (node -> isMalloc)
+            if (node->isMalloc)
             {
-                free(node -> value);
-                node -> value = NULL;
+                free(node->value);
+                node->value = NULL;
             }
 
             free(node);
@@ -940,7 +940,7 @@ int testListPeek(void)
 
         voidPtr = NULL;
 
-        free(list -> head);
+        free(list->head);
         node = NULL;
 
         free(list);
@@ -966,15 +966,15 @@ int testListPeek(void)
 
         voidPtr = NULL;
 
-        while (list -> head != NULL)
+        while (list->head != NULL)
         {
-            node = list -> head;
-            list -> head = list -> head -> next;
+            node = list->head;
+            list->head = list->head->next;
 
-            if (node -> isMalloc)
+            if (node->isMalloc)
             {
-                free(node -> value);
-                node -> value = NULL;
+                free(node->value);
+                node->value = NULL;
             }
 
             free(node);

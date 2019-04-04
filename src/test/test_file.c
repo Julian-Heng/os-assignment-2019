@@ -28,8 +28,8 @@ int main(int argc, char** argv)
                 n = dequeue(f.data, (void*)&str, &j);
                 fprintf(stdout, "%s\n", str);
 
-                free(n -> value);
-                n -> value = NULL;
+                free(n->value);
+                n->value = NULL;
 
                 free(n);
                 n = NULL;

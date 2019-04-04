@@ -44,8 +44,8 @@ int testQueueConstructor()
                              isQueueEmpty(q) &&
                              getQueueLength(q) == 0 &&
                              getQueueMaxLength(q) == 5);
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -72,14 +72,14 @@ int testQueueEnqueue()
         status = printResult(!! q &&
                              getQueueLength(q) == 1 &&
                              getQueueMaxLength(q) == 5 &&
-                             ! (q -> queue -> head -> isMalloc) &&
-                             ! (q -> queue -> head -> value));
+                             ! (q->link->head->isMalloc) &&
+                             ! (q->link->head->value));
 
-        free(q -> queue -> head);
-        q -> queue -> head = NULL;
+        free(q->link->head);
+        q->link->head = NULL;
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -94,14 +94,14 @@ int testQueueEnqueue()
         status = printResult(!! q &&
                              getQueueLength(q) == 1 &&
                              getQueueMaxLength(q) == 5 &&
-                             ! (q -> queue -> head -> isMalloc) &&
-                             ! strcmp(q -> queue -> head -> value, "test string"));
+                             ! (q->link->head->isMalloc) &&
+                             ! strcmp(q->link->head->value, "test string"));
 
-        free(q -> queue -> head);
-        q -> queue -> head = NULL;
+        free(q->link->head);
+        q->link->head = NULL;
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -117,17 +117,17 @@ int testQueueEnqueue()
         status = printResult(!! q &&
                              getQueueLength(q) == 1 &&
                              getQueueMaxLength(q) == 5 &&
-                             q -> queue -> head -> isMalloc &&
-                             ! strcmp(q -> queue -> head -> value, "test string"));
+                             q->link->head->isMalloc &&
+                             ! strcmp(q->link->head->value, "test string"));
 
-        free(q -> queue -> head -> value);
-        q -> queue -> head -> value = NULL;
+        free(q->link->head->value);
+        q->link->head->value = NULL;
 
-        free(q -> queue -> head);
-        q -> queue -> head = NULL;
+        free(q->link->head);
+        q->link->head = NULL;
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -141,16 +141,16 @@ int testQueueEnqueue()
         status = enqueue(q, NULL, FALSE);
         status = printResult(! enqueue(q, NULL, FALSE));
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -170,14 +170,14 @@ int testQueueEnqueue()
         }
 
         i = 0;
-        n = q -> queue -> head;
+        n = q->link->head;
 
         while (n != NULL && i++ < 5 && status)
         {
-            if (!! q && ! strcmp(n -> value, "test string"))
+            if (!! q && ! strcmp(n->value, "test string"))
             {
                 status = TRUE;
-                n = n -> next;
+                n = n->next;
             }
             else
             {
@@ -187,16 +187,16 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -217,7 +217,7 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> queue -> head;
+        n = q->link->head;
 
         while (n != NULL && i++ < 5 && status)
         {
@@ -225,10 +225,10 @@ int testQueueEnqueue()
             memset(str, '\0', (strlen("test string") + 3));
             sprintf(str, "test string %d", i);
 
-            if (!! q && ! strcmp(n -> value, str))
+            if (!! q && ! strcmp(n->value, str))
             {
                 status = TRUE;
-                n = n -> next;
+                n = n->next;
             }
             else
             {
@@ -241,20 +241,20 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
 
-            free(n -> value);
-            n -> value = NULL;
+            free(n->value);
+            n->value = NULL;
 
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -285,16 +285,16 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> queue -> head;
+        n = q->link->head;
 
         while (n != NULL && i++ < 5 && status)
         {
             if (i & 1)
             {
-                if (!! q && ! strcmp(n -> value, "test string"))
+                if (!! q && ! strcmp(n->value, "test string"))
                 {
                     status = TRUE;
-                    n = n -> next;
+                    n = n->next;
                 }
                 else
                 {
@@ -307,10 +307,10 @@ int testQueueEnqueue()
                 memset(str, '\0', (strlen("test string") + 3));
                 sprintf(str, "test string %d", i);
 
-                if (!! q && ! strcmp(n -> value, str))
+                if (!! q && ! strcmp(n->value, str))
                 {
                     status = TRUE;
-                    n = n -> next;
+                    n = n->next;
                 }
                 else
                 {
@@ -324,23 +324,23 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
 
-            if (n -> isMalloc)
+            if (n->isMalloc)
             {
-                free(n -> value);
-                n -> value = NULL;
+                free(n->value);
+                n->value = NULL;
             }
 
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -360,14 +360,14 @@ int testQueueEnqueue()
         }
 
         i = 0;
-        n = q -> queue -> head;
+        n = q->link->head;
 
         while (n != NULL && i++ < 100000 && status)
         {
-            if (!! q && ! strcmp(n -> value, "test string"))
+            if (!! q && ! strcmp(n->value, "test string"))
             {
                 status = TRUE;
-                n = n -> next;
+                n = n->next;
             }
             else
             {
@@ -377,16 +377,16 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -407,7 +407,7 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> queue -> head;
+        n = q->link->head;
 
         while (n != NULL && i++ < 100000 && status)
         {
@@ -415,10 +415,10 @@ int testQueueEnqueue()
             memset(str, '\0', (strlen("test string") + 9));
             sprintf(str, "test string %d", i);
 
-            if (!! q && ! strcmp(n -> value, str))
+            if (!! q && ! strcmp(n->value, str))
             {
                 status = TRUE;
-                n = n -> next;
+                n = n->next;
             }
             else
             {
@@ -431,20 +431,20 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
 
-            free(n -> value);
-            n -> value = NULL;
+            free(n->value);
+            n->value = NULL;
 
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -475,16 +475,16 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> queue -> head;
+        n = q->link->head;
 
         while (n != NULL && i++ < 100000 && status)
         {
             if (i & 1)
             {
-                if (!! q && ! strcmp(n -> value, "test string"))
+                if (!! q && ! strcmp(n->value, "test string"))
                 {
                     status = TRUE;
-                    n = n -> next;
+                    n = n->next;
                 }
                 else
                 {
@@ -497,10 +497,10 @@ int testQueueEnqueue()
                 memset(str, '\0', (strlen("test string") + 9));
                 sprintf(str, "test string %d", i);
 
-                if (!! q && ! strcmp(n -> value, str))
+                if (!! q && ! strcmp(n->value, str))
                 {
                     status = TRUE;
-                    n = n -> next;
+                    n = n->next;
                 }
                 else
                 {
@@ -514,23 +514,23 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
 
-            if (n -> isMalloc)
+            if (n->isMalloc)
             {
-                free(n -> value);
-                n -> value = NULL;
+                free(n->value);
+                n->value = NULL;
             }
 
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -561,8 +561,8 @@ int testQueueDequeue()
                              ! ptr &&
                              isMalloc == -1);
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -582,8 +582,8 @@ int testQueueDequeue()
         free(n);
         n = NULL;
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -605,8 +605,8 @@ int testQueueDequeue()
         free(n);
         n = NULL;
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -632,8 +632,8 @@ int testQueueDequeue()
         free(n);
         n = NULL;
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -671,16 +671,16 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -729,8 +729,8 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -803,23 +803,23 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
 
-            if (n -> isMalloc)
+            if (n->isMalloc)
             {
-                free(n -> value);
-                n -> value = NULL;
+                free(n->value);
+                n->value = NULL;
             }
 
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -857,16 +857,16 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -915,8 +915,8 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -989,23 +989,23 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> queue -> head != NULL)
+        while (q->link->head != NULL)
         {
-            n = q -> queue -> head;
-            q -> queue -> head = q -> queue -> head -> next;
+            n = q->link->head;
+            q->link->head = q->link->head->next;
 
-            if (n -> isMalloc)
+            if (n->isMalloc)
             {
-                free(n -> value);
-                n -> value = NULL;
+                free(n->value);
+                n->value = NULL;
             }
 
             free(n);
             n = NULL;
         }
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -1037,8 +1037,8 @@ int testQueuePeek()
         status = printResult(! voidPtr &&
                              ret == -1);
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
@@ -1057,11 +1057,11 @@ int testQueuePeek()
 
         voidPtr = NULL;
 
-        free(q -> queue -> head);
-        q -> queue -> head = NULL;
+        free(q->link->head);
+        q->link->head = NULL;
 
-        free(q -> queue);
-        q -> queue = NULL;
+        free(q->link);
+        q->link = NULL;
 
         free(q);
         q = NULL;
