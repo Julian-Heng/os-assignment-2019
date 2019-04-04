@@ -18,5 +18,6 @@ int getQueueLength(Queue* q);
 int getQueueMaxLength(Queue* q);
 void clearQueue(Queue** q);
 int isQueueEmpty(Queue* q);
+int isQueueFull(Queue* q);
 
 #endif

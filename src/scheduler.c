@@ -12,26 +12,39 @@
 
 int main(int argc, char** argv)
 {
-    Queue* taskList;
+    int ret;
+    int max;
+
+    if (argc < 3)
+    {
+        usage();
+        ret = 1;
+    }
+    else
+    {
+        sscanf(argv[2], "%d", &max);
+        ret = run(argv[1], max);
+    }
+
+    return ret;
+}
+
+int run(char* filename, int max)
+{
+    File taskList;
     QueueNode* task;
 
+    int ret;
     int taskID;
     int proc;
     int mallocCheck;
-
     char* str;
 
-    if (argc == 1)
-    {
-        usage();
-        return 1;
-    }
+    readFile(filename, &taskList);
 
-    taskList = readTasks(argv[1]);
-
-    while (! isQueueEmpty(taskList))
+    while (! isQueueEmpty(taskList.data))
     {
-        task = dequeue(taskList, (void**)&str, &mallocCheck);
+        task = dequeue(taskList.data, (void**)&str, &mallocCheck);
 
         sscanf(str, "task%d %d", &taskID, &proc);
         process(taskID, proc);
@@ -40,29 +53,10 @@ int main(int argc, char** argv)
         free(task);
     }
 
-    clearQueue(&taskList);
+    clearQueue(&(taskList.data));
+    ret = 0;
 
-    return 0;
-}
-
-Queue* readTasks(char* filename)
-{
-    Queue* q;
-    File f;
-    int i;
-
-    readFile(filename, &f);
-    q = initQueue(f.rows);
-
-    for (i = 0; i < f.rows; i++)
-    {
-        enqueue(q, f.d[i], TRUE);
-    }
-
-    free(f.d);
-    f.d = NULL;
-
-    return q;
+    return ret;
 }
 
 void process(int task, int proc)

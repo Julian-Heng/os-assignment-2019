@@ -79,3 +79,8 @@ int isQueueEmpty(Queue* q)
 {
     return isListEmpty(q -> queue);
 }
+
+int isQueueFull(Queue* q)
+{
+    return q -> max == q -> queue -> length;
+}

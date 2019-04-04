@@ -2,10 +2,14 @@
 #include <stdio.h>
 
 #include "../file.h"
+#include "../queue.h"
 
 int main(int argc, char** argv)
 {
     File f;
+    QueueNode* n;
+
+    char* str;
     int i, j;
 
     if (argc == 1)
@@ -18,22 +22,23 @@ int main(int argc, char** argv)
         {
             fprintf(stdout, "\n");
             readFile(argv[i], &f);
-            for (j = 0; j < f.rows; j++)
+
+            while (! isQueueEmpty(f.data))
             {
-                fprintf(stdout, "%s\n", (f.d)[j]);
+                n = dequeue(f.data, (void*)&str, &j);
+                fprintf(stdout, "%s\n", str);
+
+                free(n -> value);
+                n -> value = NULL;
+
+                free(n);
+                n = NULL;
             }
 
             fprintf(stdout, "\nFile rows: %d\n", f.rows);
             fprintf(stdout, "File cols: %d\n", f.cols);
 
-            for (j = 0; j < f.rows; j++)
-            {
-                free((f.d)[j]);
-                (f.d)[j] = NULL;
-            }
-
-            free(f.d);
-            f.d = NULL;
+            clearQueue(&(f.data));
         }
     }
 

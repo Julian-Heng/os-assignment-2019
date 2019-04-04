@@ -3,7 +3,7 @@
 
 #include "queue.h"
 
-Queue* readTasks(char* filename);
+int run(char* filename, int max);
 void process(int task, int proc);
 void usage(void);
 

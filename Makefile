@@ -47,9 +47,11 @@ test_queue: queue
 			$(OBJ)/test_queue.o \
 			-o $(BUILD)/test_queue
 
-test_file: file
+test_file: file queue
 	$(CC) $(CFLAGS) -o $(OBJ)/test_file.o -c $(TEST)/test_file.c
 	$(CC)	$(OBJ)/file.o \
+			$(OBJ)/linkedList.o \
+			$(OBJ)/queue.o \
 			$(OBJ)/test_file.o \
 			-o $(BUILD)/test_file
 

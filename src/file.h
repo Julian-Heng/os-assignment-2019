@@ -1,9 +1,11 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include "queue.h"
+
 typedef struct File
 {
-    char** d;
+    Queue* data;
     int rows;
     int cols;
 } File;
