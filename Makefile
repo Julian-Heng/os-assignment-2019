@@ -14,6 +14,9 @@ linkedList: dirs
 queue: linkedList
 	$(CC) $(CFLAGS) -o $(OBJ)/queue.o -c $(SRC)/queue.c
 
+file: dirs
+	$(CC) $(CFLAGS) -o $(OBJ)/file.o -c $(SRC)/file.c
+
 test: runtest_linkedList runtest_queue
 
 runtest_linkedList: test_linkedList
@@ -33,8 +36,15 @@ test_linkedList: linkedList
 test_queue: queue
 	$(CC) $(CFLAGS) -o $(OBJ)/test_queue.o -c $(TEST)/test_queue.c
 	$(CC) 	$(OBJ)/linkedList.o \
-			$(OBJ)/queue.o $(OBJ)/test_queue.o \
+			$(OBJ)/queue.o \
+			$(OBJ)/test_queue.o \
 			-o $(BUILD)/test_queue
+
+test_file: file
+	$(CC) $(CFLAGS) -o $(OBJ)/test_file.o -c $(TEST)/test_file.c
+	$(CC)	$(OBJ)/file.o \
+			$(OBJ)/test_file.o \
+			-o $(BUILD)/test_file
 
 clean:
 	$(RM) -rv $(BUILD)
