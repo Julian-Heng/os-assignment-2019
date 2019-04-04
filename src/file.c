@@ -36,12 +36,12 @@ void read_file(char* filename, File* file)
 
         for (i = 0; i < rows; i++)
         {
-            (file -> d)[i] = (char*)malloc(cols + 1 * sizeof(char));
+            (file -> d)[i] = (char*)malloc((cols + 1) * sizeof(char));
             memset((file -> d)[i], '\0', cols + 1);
         }
 
         i = -1;
-        while ((++i < rows) && fgets((file -> d)[i], cols + 1, f))
+        while ((++i < rows) && fgets((file -> d)[i], cols + 2, f))
         {
             (file -> d)[i][strcspn((file -> d)[i], "\n")] = '\0';
         }
