@@ -131,6 +131,8 @@ LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
         {
             list -> head = list -> head -> next;
         }
+
+        (list -> length)--;
     }
     else
     {
@@ -163,6 +165,8 @@ LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
         {
             list -> tail = list -> tail -> next;
         }
+
+        (list -> length)--;
     }
     else
     {

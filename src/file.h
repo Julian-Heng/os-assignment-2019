@@ -8,6 +8,6 @@ typedef struct File
     int cols;
 } File;
 
-void read_file(char* filename, File* file);
+void readFile(char* filename, File* file);
 
 #endif

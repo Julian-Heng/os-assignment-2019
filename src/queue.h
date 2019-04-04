@@ -1,6 +1,8 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include "linkedList.h"
+
 typedef struct Queue
 {
     LinkedList* queue;

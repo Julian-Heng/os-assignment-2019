@@ -17,7 +17,7 @@ int main(int argc, char** argv)
         for (i = 1; i < argc; i++)
         {
             fprintf(stdout, "\n");
-            read_file(argv[i], &f);
+            readFile(argv[i], &f);
             for (j = 0; j < f.rows; j++)
             {
                 fprintf(stdout, "%s\n", (f.d)[j]);

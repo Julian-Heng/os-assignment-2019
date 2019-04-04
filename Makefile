@@ -5,8 +5,15 @@ OBJ = $(BUILD)/obj
 SRC = ./src
 TEST = $(SRC)/test
 
-all: dirs
-	$(CC) $(CFLAGS) -o $(BUILD)/scheduler $(SRC)/scheduler.c
+all: dirs scheduler
+
+scheduler: dirs queue file
+	$(CC) $(CFLAGS) -o $(OBJ)/scheduler.o -c $(SRC)/scheduler.c
+	$(CC)	$(OBJ)/linkedList.o \
+			$(OBJ)/queue.o \
+			$(OBJ)/file.o \
+			$(OBJ)/scheduler.o \
+			-o $(BUILD)/scheduler
 
 linkedList: dirs
 	$(CC) $(CFLAGS) -o $(OBJ)/linkedList.o -c $(SRC)/linkedList.c

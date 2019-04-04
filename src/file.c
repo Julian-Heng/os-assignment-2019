@@ -4,7 +4,7 @@
 
 #include "file.h"
 
-void read_file(char* filename, File* file)
+void readFile(char* filename, File* file)
 {
     FILE* f;
     int rows, cols, count, ch, i;
@@ -36,8 +36,8 @@ void read_file(char* filename, File* file)
 
         for (i = 0; i < rows; i++)
         {
-            (file -> d)[i] = (char*)malloc((cols + 1) * sizeof(char));
-            memset((file -> d)[i], '\0', cols + 1);
+            (file -> d)[i] = (char*)malloc((cols + 2) * sizeof(char));
+            memset((file -> d)[i], '\0', cols + 2);
         }
 
         i = -1;
