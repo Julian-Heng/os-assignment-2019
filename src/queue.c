@@ -38,7 +38,7 @@ void peek(Queue* q, void** v, int* i)
     peekFirst(q, v, i);
 }
 
-int getLength(Queue* q)
+int getQueueLength(Queue* q)
 {
     return q -> length;
 }

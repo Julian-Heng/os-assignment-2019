@@ -8,7 +8,7 @@ Queue* initQueue(void);
 void enqueue(Queue* q, void* v, int isMalloc);
 QueueNode* dequeue(Queue* q, void** v, int* i);
 void peek(Queue* q, void** v, int* i);
-int getLength(Queue* q);
+int getQueueLength(Queue* q);
 void clearQueue(Queue** q);
 int isQueueEmpty(Queue* q);
 

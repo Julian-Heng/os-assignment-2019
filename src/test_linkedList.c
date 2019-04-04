@@ -726,7 +726,6 @@ int testListRemove(void)
             j = (int*)malloc(sizeof(int));
             *j = i;
             insertLast(list, j, TRUE);
-            peekFirst(list, &voidPtr, &ret);
         }
 
         node = removeFirst(list, &voidPtr, &ret);
@@ -734,6 +733,12 @@ int testListRemove(void)
         status = printResult(!! voidPtr &&
                              *(int*)(voidPtr) == 0 &&
                              ret);
+
+        free(voidPtr);
+        voidPtr = NULL;
+
+        free(node);
+        node = NULL;
 
         while (list -> head != NULL)
         {
