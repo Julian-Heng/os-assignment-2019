@@ -5,19 +5,19 @@
 
 typedef struct Queue
 {
-    LinkedList* queue;
+    LinkedList* link;
     int max;
 } Queue;
 typedef LinkedListNode QueueNode;
 
 Queue* initQueue(int max);
-int enqueue(Queue* q, void* v, int isMalloc);
-QueueNode* dequeue(Queue* q, void** v, int* i);
-void peek(Queue* q, void** v, int* i);
-int getQueueLength(Queue* q);
-int getQueueMaxLength(Queue* q);
-void clearQueue(Queue** q);
-int isQueueEmpty(Queue* q);
-int isQueueFull(Queue* q);
+int enqueue(Queue* queue, void* val, int isMalloc);
+QueueNode* dequeue(Queue* queue, void** v, int* i);
+void peek(Queue* queue, void** val, int* i);
+int getQueueLength(Queue* queue);
+int getQueueMaxLength(Queue* queue);
+void clearQueue(Queue** queue);
+int isQueueEmpty(Queue* queue);
+int isQueueFull(Queue* queue);
 
 #endif
