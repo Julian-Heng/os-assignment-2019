@@ -39,8 +39,14 @@ int testQueueConstructor()
     if (status)
     {
         fprintf(stdout, "Testing initQueue(): ");
-        q = initQueue();
-        status = printResult(!! q && isQueueEmpty(q));
+        q = initQueue(5);
+        status = printResult(!! q &&
+                             isQueueEmpty(q) &&
+                             getQueueLength(q) == 0 &&
+                             getQueueMaxLength(q) == 5);
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -60,15 +66,20 @@ int testQueueEnqueue()
 
     if (status)
     {
-        fprintf(stdout, "Testing enqueue() without a value: ");
-        q = initQueue();
+        fprintf(stdout, "Testing clear() without a value: ");
+        q = initQueue(5);
         enqueue(q, NULL, FALSE);
         status = printResult(!! q &&
-                             ! (q -> head -> isMalloc) &&
-                             ! (q -> head -> value));
+                             getQueueLength(q) == 1 &&
+                             getQueueMaxLength(q) == 5 &&
+                             ! (q -> queue -> head -> isMalloc) &&
+                             ! (q -> queue -> head -> value));
 
-        free(q -> head);
-        q -> head = NULL;
+        free(q -> queue -> head);
+        q -> queue -> head = NULL;
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -76,16 +87,21 @@ int testQueueEnqueue()
 
     if (status)
     {
-        fprintf(stdout, "Testing enqueue() with a value and not malloc: ");
-        q = initQueue();
+        fprintf(stdout, "Testing clear() with a value and not malloc: ");
+        q = initQueue(5);
         str = "test string";
         enqueue(q, str, FALSE);
         status = printResult(!! q &&
-                             ! (q -> head -> isMalloc) &&
-                             ! strcmp(q -> head -> value, "test string"));
+                             getQueueLength(q) == 1 &&
+                             getQueueMaxLength(q) == 5 &&
+                             ! (q -> queue -> head -> isMalloc) &&
+                             ! strcmp(q -> queue -> head -> value, "test string"));
 
-        free(q -> head);
-        q -> head = NULL;
+        free(q -> queue -> head);
+        q -> queue -> head = NULL;
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -93,20 +109,48 @@ int testQueueEnqueue()
 
     if (status)
     {
-        fprintf(stdout, "Testing enqueue() with a value and malloc: ");
-        q = initQueue();
+        fprintf(stdout, "Testing clear() with a value and malloc: ");
+        q = initQueue(5);
         str = (char*)malloc(sizeof(char) * (strlen("test string") + 1));
         strncpy(str, "test string", strlen("test string") + 1);
         enqueue(q, str, TRUE);
         status = printResult(!! q &&
-                             q -> head -> isMalloc &&
-                             ! strcmp(q -> head -> value, "test string"));
+                             getQueueLength(q) == 1 &&
+                             getQueueMaxLength(q) == 5 &&
+                             q -> queue -> head -> isMalloc &&
+                             ! strcmp(q -> queue -> head -> value, "test string"));
 
-        free(q -> head -> value);
-        q -> head -> value = NULL;
+        free(q -> queue -> head -> value);
+        q -> queue -> head -> value = NULL;
 
-        free(q -> head);
-        q -> head = NULL;
+        free(q -> queue -> head);
+        q -> queue -> head = NULL;
+
+        free(q -> queue);
+        q -> queue = NULL;
+
+        free(q);
+        q = NULL;
+    }
+
+    if (status)
+    {
+        fprintf(stdout, "Testing clear() with a full queue: ");
+        q = initQueue(2);
+        status = enqueue(q, NULL, FALSE);
+        status = enqueue(q, NULL, FALSE);
+        status = printResult(! enqueue(q, NULL, FALSE));
+
+        while (q -> queue -> head != NULL)
+        {
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
+            free(n);
+            n = NULL;
+        }
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -115,8 +159,8 @@ int testQueueEnqueue()
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and not malloc [5x]: ");
-        q = initQueue();
+                "Testing clear() with a value and not malloc [5x]: ");
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -126,7 +170,7 @@ int testQueueEnqueue()
         }
 
         i = 0;
-        n = q -> head;
+        n = q -> queue -> head;
 
         while (n != NULL && i++ < 5 && status)
         {
@@ -143,13 +187,16 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
             free(n);
             n = NULL;
         }
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -158,8 +205,8 @@ int testQueueEnqueue()
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and is malloc [5x]: ");
-        q = initQueue();
+                "Testing clear() with a value and is malloc [5x]: ");
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -170,7 +217,7 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> head;
+        n = q -> queue -> head;
 
         while (n != NULL && i++ < 5 && status)
         {
@@ -194,10 +241,10 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
 
             free(n -> value);
             n -> value = NULL;
@@ -206,6 +253,9 @@ int testQueueEnqueue()
             n = NULL;
         }
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -213,9 +263,9 @@ int testQueueEnqueue()
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with value and mix malloc [5x]: ");
+                "Testing clear() with value and mix malloc [5x]: ");
 
-        q = initQueue();
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -235,7 +285,7 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> head;
+        n = q -> queue -> head;
 
         while (n != NULL && i++ < 5 && status)
         {
@@ -274,10 +324,10 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
 
             if (n -> isMalloc)
             {
@@ -289,6 +339,9 @@ int testQueueEnqueue()
             n = NULL;
         }
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -296,8 +349,8 @@ int testQueueEnqueue()
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and not malloc [100000x]: ");
-        q = initQueue();
+                "Testing clear() with a value and not malloc [100000x]: ");
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -307,7 +360,7 @@ int testQueueEnqueue()
         }
 
         i = 0;
-        n = q -> head;
+        n = q -> queue -> head;
 
         while (n != NULL && i++ < 100000 && status)
         {
@@ -324,13 +377,16 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
             free(n);
             n = NULL;
         }
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -339,8 +395,8 @@ int testQueueEnqueue()
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and is malloc [100000x]: ");
-        q = initQueue();
+                "Testing clear() with a value and is malloc [100000x]: ");
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -351,7 +407,7 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> head;
+        n = q -> queue -> head;
 
         while (n != NULL && i++ < 100000 && status)
         {
@@ -375,10 +431,10 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
 
             free(n -> value);
             n -> value = NULL;
@@ -387,6 +443,9 @@ int testQueueEnqueue()
             n = NULL;
         }
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -394,9 +453,9 @@ int testQueueEnqueue()
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with value and mix malloc [100000x]: ");
+                "Testing clear() with value and mix malloc [100000x]: ");
 
-        q = initQueue();
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -416,7 +475,7 @@ int testQueueEnqueue()
         }
 
         i = -1;
-        n = q -> head;
+        n = q -> queue -> head;
 
         while (n != NULL && i++ < 100000 && status)
         {
@@ -455,10 +514,10 @@ int testQueueEnqueue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
 
             if (n -> isMalloc)
             {
@@ -469,6 +528,9 @@ int testQueueEnqueue()
             free(n);
             n = NULL;
         }
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -492,12 +554,15 @@ int testQueueDequeue()
     if (status)
     {
         fprintf(stdout, "Testing dequeue() with an empty queue: ");
-        q = initQueue();
+        q = initQueue(5);
         n = dequeue(q, &ptr, &isMalloc);
         status = printResult(!! q &&
                              ! n &&
                              ! ptr &&
                              isMalloc == -1);
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -506,7 +571,7 @@ int testQueueDequeue()
     if (status)
     {
         fprintf(stdout, "Testing dequeue() without a value: ");
-        q = initQueue();
+        q = initQueue(5);
         enqueue(q, NULL, FALSE);
         n = dequeue(q, &ptr, &isMalloc);
         status = printResult(!! q &&
@@ -517,6 +582,9 @@ int testQueueDequeue()
         free(n);
         n = NULL;
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -524,7 +592,7 @@ int testQueueDequeue()
     if (status)
     {
         fprintf(stdout, "Testing dequeue() with a value and not malloc: ");
-        q = initQueue();
+        q = initQueue(5);
         str = "test string";
         enqueue(q, str, FALSE);
         n = dequeue(q, &ptr, &isMalloc);
@@ -537,6 +605,9 @@ int testQueueDequeue()
         free(n);
         n = NULL;
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -544,7 +615,7 @@ int testQueueDequeue()
     if (status)
     {
         fprintf(stdout, "Testing dequeue() with a value and malloc: ");
-        q = initQueue();
+        q = initQueue(5);
         str = (char*)malloc(sizeof(char) * (strlen("test string") + 1));
         strncpy(str, "test string", strlen("test string") + 1);
         enqueue(q, str, TRUE);
@@ -561,6 +632,9 @@ int testQueueDequeue()
         free(n);
         n = NULL;
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -569,7 +643,7 @@ int testQueueDequeue()
     {
         fprintf(stdout,
                 "Testing dequeue() with a value and not malloc [5x]: ");
-        q = initQueue();
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -597,13 +671,16 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
             free(n);
             n = NULL;
         }
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -613,7 +690,7 @@ int testQueueDequeue()
     {
         fprintf(stdout,
                 "Testing dequeue() with a value and is malloc [5x]: ");
-        q = initQueue();
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -651,6 +728,9 @@ int testQueueDequeue()
         }
 
         status = printResult(status);
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -661,7 +741,7 @@ int testQueueDequeue()
         fprintf(stdout,
                 "Testing dequeue() with value and mix malloc [5x]: ");
 
-        q = initQueue();
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -723,10 +803,10 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
 
             if (n -> isMalloc)
             {
@@ -738,6 +818,9 @@ int testQueueDequeue()
             n = NULL;
         }
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -746,7 +829,7 @@ int testQueueDequeue()
     {
         fprintf(stdout,
                 "Testing dequeue() with a value and not malloc [100000x]: ");
-        q = initQueue();
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -774,13 +857,16 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
             free(n);
             n = NULL;
         }
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -790,7 +876,7 @@ int testQueueDequeue()
     {
         fprintf(stdout,
                 "Testing dequeue() with a value and is malloc [100000x]: ");
-        q = initQueue();
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -829,6 +915,9 @@ int testQueueDequeue()
 
         status = printResult(status);
 
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -838,7 +927,7 @@ int testQueueDequeue()
         fprintf(stdout,
                 "Testing dequeue() with value and mix malloc [100000x]: ");
 
-        q = initQueue();
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -900,10 +989,10 @@ int testQueueDequeue()
 
         status = printResult(status);
 
-        while (q -> head != NULL)
+        while (q -> queue -> head != NULL)
         {
-            n = q -> head;
-            q -> head = q -> head -> next;
+            n = q -> queue -> head;
+            q -> queue -> head = q -> queue -> head -> next;
 
             if (n -> isMalloc)
             {
@@ -914,6 +1003,9 @@ int testQueueDequeue()
             free(n);
             n = NULL;
         }
+
+        free(q -> queue);
+        q -> queue = NULL;
 
         free(q);
         q = NULL;
@@ -940,10 +1032,14 @@ int testQueuePeek()
     if (status)
     {
         fprintf(stdout, "Testing peek() on an empty queue: ");
-        q = initList();
-        peekFirst(q, &voidPtr, &ret);
+        q = initQueue(5);
+        peek(q, &voidPtr, &ret);
         status = printResult(! voidPtr &&
                              ret == -1);
+
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -951,9 +1047,9 @@ int testQueuePeek()
     if (status)
     {
         fprintf(stdout, "Testing peek() on a populated queue: ");
-        q = initList();
+        q = initQueue(5);
         i = 5;
-        insertFirst(q, &i, FALSE);
+        enqueue(q, &i, FALSE);
         peek(q, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
                              *(int*)(voidPtr) == i &&
@@ -961,7 +1057,12 @@ int testQueuePeek()
 
         voidPtr = NULL;
 
-        free(q -> head);
+        free(q -> queue -> head);
+        q -> queue -> head = NULL;
+
+        free(q -> queue);
+        q -> queue = NULL;
+
         free(q);
         q = NULL;
     }
@@ -980,40 +1081,40 @@ int testQueueClear()
 
     if (status)
     {
-        fprintf(stdout, "Testing enqueue() without a value: ");
-        q = initQueue();
+        fprintf(stdout, "Testing clear() without a value: ");
+        q = initQueue(5);
         enqueue(q, NULL, FALSE);
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
-        fprintf(stdout, "Testing enqueue() with a value and not malloc: ");
-        q = initQueue();
+        fprintf(stdout, "Testing clear() with a value and not malloc: ");
+        q = initQueue(5);
         str = "test string";
         enqueue(q, str, FALSE);
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
-        fprintf(stdout, "Testing enqueue() with a value and malloc: ");
-        q = initQueue();
+        fprintf(stdout, "Testing clear() with a value and malloc: ");
+        q = initQueue(5);
         str = (char*)malloc(sizeof(char) * (strlen("test string") + 1));
         strncpy(str, "test string", strlen("test string") + 1);
         enqueue(q, str, TRUE);
 
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and not malloc [5x]: ");
-        q = initQueue();
+                "Testing clear() with a value and not malloc [5x]: ");
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -1022,15 +1123,15 @@ int testQueueClear()
             str = "";
         }
 
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and is malloc [5x]: ");
-        q = initQueue();
+                "Testing clear() with a value and is malloc [5x]: ");
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -1040,16 +1141,16 @@ int testQueueClear()
             enqueue(q, str, TRUE);
         }
 
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with value and mix malloc [5x]: ");
+                "Testing clear() with value and mix malloc [5x]: ");
 
-        q = initQueue();
+        q = initQueue(5);
 
         for (i = 0; i < 5; i++)
         {
@@ -1068,15 +1169,15 @@ int testQueueClear()
             }
         }
 
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and not malloc [100000x]: ");
-        q = initQueue();
+                "Testing clear() with a value and not malloc [100000x]: ");
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -1085,15 +1186,15 @@ int testQueueClear()
             str = "";
         }
 
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with a value and is malloc [100000x]: ");
-        q = initQueue();
+                "Testing clear() with a value and is malloc [100000x]: ");
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -1103,16 +1204,16 @@ int testQueueClear()
             enqueue(q, str, TRUE);
         }
 
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 
     if (status)
     {
         fprintf(stdout,
-                "Testing enqueue() with value and mix malloc [100000x]: ");
+                "Testing clear() with value and mix malloc [100000x]: ");
 
-        q = initQueue();
+        q = initQueue(100000);
 
         for (i = 0; i < 100000; i++)
         {
@@ -1131,7 +1232,7 @@ int testQueueClear()
             }
         }
 
-        clearList(&q);
+        clearQueue(&q);
         status = printResult(! q);
     }
 

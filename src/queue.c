@@ -5,23 +5,43 @@
  *           list
  **/
 
+#include <stdlib.h>
+
 #include "linkedList.h"
 #include "queue.h"
+
+#define FALSE 0
+#define TRUE !FALSE
 
 /**
  * Return a Queue, which is typedef to a LinkedList
  **/
-Queue* initQueue(void)
+Queue* initQueue(int max)
 {
-    return initList();
+    Queue* q;
+
+    if ((q = (Queue*)malloc(sizeof(Queue))))
+    {
+        q -> queue = initList();
+        q -> max = max;
+    }
+
+    return q;
 }
 
 /**
  * Add a void pointer to the queue
  **/
-void enqueue(Queue* q, void* v, int isMalloc)
+int enqueue(Queue* q, void* v, int isMalloc)
 {
-    insertLast(q, v, isMalloc);
+    int ret = FALSE;
+    if (getQueueLength(q) < q -> max)
+    {
+        insertLast(q -> queue, v, isMalloc);
+        ret = TRUE;
+    }
+
+    return ret;
 }
 
 /**
@@ -30,25 +50,32 @@ void enqueue(Queue* q, void* v, int isMalloc)
  **/
 QueueNode* dequeue(Queue* q, void** v, int* i)
 {
-    return removeFirst(q, v, i);
+    return removeFirst(q -> queue, v, i);
 }
 
 void peek(Queue* q, void** v, int* i)
 {
-    peekFirst(q, v, i);
+    peekFirst(q -> queue, v, i);
 }
 
 int getQueueLength(Queue* q)
 {
-    return q -> length;
+    return q -> queue -> length;
+}
+
+int getQueueMaxLength(Queue* q)
+{
+    return q -> max;
 }
 
 void clearQueue(Queue** q)
 {
-    clearList(q);
+    clearList(&((*q) -> queue));
+    free(*q);
+    *q = NULL;
 }
 
 int isQueueEmpty(Queue* q)
 {
-    return isListEmpty(q);
+    return isListEmpty(q -> queue);
 }
