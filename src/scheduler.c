@@ -49,7 +49,7 @@ int run(char* filename, int max)
         sscanf(str, "task%d %d", &taskID, &proc);
         process(taskID, proc);
 
-        free(task -> value);
+        free(task->value);
         free(task);
     }
 
@@ -74,16 +74,16 @@ void process(int task, int proc)
 
     time(&rawSecs);
     timeinfo = localtime(&rawSecs);
-    fprintf(stdout, arriveFmt, timeinfo -> tm_hour,
-                               timeinfo -> tm_min,
-                               timeinfo -> tm_sec);
+    fprintf(stdout, arriveFmt, timeinfo->tm_hour,
+                               timeinfo->tm_min,
+                               timeinfo->tm_sec);
     sleep(proc);
 
     time(&rawSecs);
     timeinfo = localtime(&rawSecs);
-    fprintf(stdout, completeFmt, timeinfo -> tm_hour,
-                                 timeinfo -> tm_min,
-                                 timeinfo -> tm_sec);
+    fprintf(stdout, completeFmt, timeinfo->tm_hour,
+                                 timeinfo->tm_min,
+                                 timeinfo->tm_sec);
 }
 
 void usage(void)

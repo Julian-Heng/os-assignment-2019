@@ -22,8 +22,8 @@ Queue* initQueue(int max)
 
     if ((q = (Queue*)malloc(sizeof(Queue))))
     {
-        q -> queue = initList();
-        q -> max = max;
+        q->queue = initList();
+        q->max = max;
     }
 
     return q;
@@ -35,9 +35,9 @@ Queue* initQueue(int max)
 int enqueue(Queue* q, void* v, int isMalloc)
 {
     int ret = FALSE;
-    if (getQueueLength(q) < q -> max)
+    if (getQueueLength(q) < q->max)
     {
-        insertLast(q -> queue, v, isMalloc);
+        insertLast(q->queue, v, isMalloc);
         ret = TRUE;
     }
 
@@ -50,37 +50,37 @@ int enqueue(Queue* q, void* v, int isMalloc)
  **/
 QueueNode* dequeue(Queue* q, void** v, int* i)
 {
-    return removeFirst(q -> queue, v, i);
+    return removeFirst(q->queue, v, i);
 }
 
 void peek(Queue* q, void** v, int* i)
 {
-    peekFirst(q -> queue, v, i);
+    peekFirst(q->queue, v, i);
 }
 
 int getQueueLength(Queue* q)
 {
-    return q -> queue -> length;
+    return q->queue->length;
 }
 
 int getQueueMaxLength(Queue* q)
 {
-    return q -> max;
+    return q->max;
 }
 
 void clearQueue(Queue** q)
 {
-    clearList(&((*q) -> queue));
+    clearList(&((*q)->queue));
     free(*q);
     *q = NULL;
 }
 
 int isQueueEmpty(Queue* q)
 {
-    return isListEmpty(q -> queue);
+    return isListEmpty(q->queue);
 }
 
 int isQueueFull(Queue* q)
 {
-    return q -> max == q -> queue -> length;
+    return q->max == q->queue->length;
 }

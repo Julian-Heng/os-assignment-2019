@@ -27,10 +27,10 @@ LinkedListNode* initNode(void* newValue, int isMalloc)
     if ((newNode = (LinkedListNode*)malloc(sizeof(LinkedListNode))))
     {
         /* Set default values */
-        newNode -> next = NULL;
-        newNode -> prev = NULL;
-        newNode -> value = newValue;
-        newNode -> isMalloc = isMalloc;
+        newNode->next = NULL;
+        newNode->prev = NULL;
+        newNode->value = newValue;
+        newNode->isMalloc = isMalloc;
     }
 
     return newNode;
@@ -47,9 +47,9 @@ LinkedList* initList(void)
     if ((newList = (LinkedList*)malloc(sizeof(LinkedList))))
     {
         /* Set default values */
-        newList -> head = NULL;
-        newList -> tail = NULL;
-        newList -> length = 0;
+        newList->head = NULL;
+        newList->tail = NULL;
+        newList->length = 0;
     }
 
     return newList;
@@ -71,8 +71,8 @@ void insertFirst(LinkedList* list, void* newValue, int isMalloc)
     /* Special case for empty list */
     if (list && isListEmpty(list))
     {
-        list -> head = newNode;
-        list -> tail = newNode;
+        list->head = newNode;
+        list->tail = newNode;
     }
     else
     {
@@ -80,12 +80,12 @@ void insertFirst(LinkedList* list, void* newValue, int isMalloc)
          * Set the previous pointer in the current head to newNode,
          * then set the next in newNode to current head.
          **/
-        SET_PREV_TO_NODE(list -> head, newNode)
-        SET_NEXT_TO_NODE(newNode, list -> head)
-        list -> head = newNode;
+        SET_PREV_TO_NODE(list->head, newNode)
+        SET_NEXT_TO_NODE(newNode, list->head)
+        list->head = newNode;
     }
 
-    (list -> length)++;
+    (list->length)++;
 }
 
 /**
@@ -103,8 +103,8 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
     /* Special case for empty list */
     if (list && isListEmpty(list))
     {
-        list -> head = newNode;
-        list -> tail = newNode;
+        list->head = newNode;
+        list->tail = newNode;
     }
     else
     {
@@ -113,12 +113,12 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
          * then set the next in current tail to newNode. Then set newNode as
          * the new tail
          **/
-        SET_PREV_TO_NODE(newNode, list -> tail)
-        SET_NEXT_TO_NODE(list -> tail, newNode)
-        list -> tail = newNode;
+        SET_PREV_TO_NODE(newNode, list->tail)
+        SET_NEXT_TO_NODE(list->tail, newNode)
+        list->tail = newNode;
     }
 
-    (list -> length)++;
+    (list->length)++;
 }
 
 /**
@@ -131,24 +131,24 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
  **/
 LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    LinkedListNode* node = list -> head;
+    LinkedListNode* node = list->head;
 
     /* If node is null, means that head is null and the list is empty */
     if (node)
     {
         peek(node, voidPtr, isMalloc);
 
-        if (list -> length == 1)
+        if (list->length == 1)
         {
-            list -> head = NULL;
-            list -> tail = NULL;
+            list->head = NULL;
+            list->tail = NULL;
         }
         else
         {
-            list -> head = list -> head -> next;
+            list->head = list->head->next;
         }
 
-        (list -> length)--;
+        (list->length)--;
     }
     else
     {
@@ -164,24 +164,24 @@ LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
  **/
 LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    LinkedListNode* node = list -> tail;
+    LinkedListNode* node = list->tail;
 
     /* If node is null, means that tail is null and the list is empty */
     if (node)
     {
         peek(node, voidPtr, isMalloc);
 
-        if (list -> length == 1)
+        if (list->length == 1)
         {
-            list -> head = NULL;
-            list -> tail = NULL;
+            list->head = NULL;
+            list->tail = NULL;
         }
         else
         {
-            list -> tail = list -> tail -> next;
+            list->tail = list->tail->next;
         }
 
-        (list -> length)--;
+        (list->length)--;
     }
     else
     {
@@ -200,7 +200,7 @@ LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
  **/
 void peekFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    peek(list -> head, voidPtr, isMalloc);
+    peek(list->head, voidPtr, isMalloc);
 }
 
 /**
@@ -208,15 +208,15 @@ void peekFirst(LinkedList* list, void** voidPtr, int* isMalloc)
  **/
 void peekLast(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    peek(list -> tail, voidPtr, isMalloc);
+    peek(list->tail, voidPtr, isMalloc);
 }
 
 static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc)
 {
     if (node)
     {
-        *voidPtr = node -> value;
-        *isMalloc = node -> isMalloc;
+        *voidPtr = node->value;
+        *isMalloc = node->isMalloc;
     }
     else
     {
@@ -227,7 +227,7 @@ static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc)
 
 int getListLength(LinkedList* list)
 {
-    return list -> length;
+    return list->length;
 }
 
 /**
@@ -239,7 +239,7 @@ void clearList(LinkedList** list)
     {
         if (! isListEmpty(*list))
         {
-            clearListRecurse(&((*list) -> head));
+            clearListRecurse(&((*list)->head));
         }
 
         free(*list);
@@ -251,7 +251,7 @@ static void clearListRecurse(LinkedListNode** node)
 {
     if (*node)
     {
-        clearListRecurse(&((*node) -> next));
+        clearListRecurse(&((*node)->next));
         freeNode(node);
     }
 }
@@ -263,10 +263,10 @@ static void clearListRecurse(LinkedListNode** node)
  **/
 static void freeNode(LinkedListNode** node)
 {
-    if ((*node) -> isMalloc && (*node) -> value)
+    if ((*node)->isMalloc && (*node)->value)
     {
-        free((*node) -> value);
-        (*node) -> value = NULL;
+        free((*node)->value);
+        (*node)->value = NULL;
     }
 
     free(*node);
@@ -276,7 +276,7 @@ static void freeNode(LinkedListNode** node)
 int isListEmpty(LinkedList* list)
 {
     return (list &&
-            (! (list -> head)) &&
-            (! (list -> tail)) &&
-            list -> length == 0) ? TRUE : FALSE;
+            (! (list->head)) &&
+            (! (list->tail)) &&
+            list->length == 0) ? TRUE : FALSE;
 }

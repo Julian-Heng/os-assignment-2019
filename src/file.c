@@ -49,7 +49,7 @@ void readFile(char* filename, File* file)
         }
 
         fseek(f, 0, SEEK_SET);
-        file -> data = initQueue(rows);
+        file->data = initQueue(rows);
         str = (char*)malloc((cols + 2) * sizeof(char));
         i = -1;
 
@@ -57,7 +57,7 @@ void readFile(char* filename, File* file)
         while ((++i < rows) && fgets(str, cols + 2, f))
         {
             str[strcspn(str, "\n")] = '\0';
-            enqueue(file -> data, str, TRUE);
+            enqueue(file->data, str, TRUE);
             str = (char*)malloc((cols + 2) * sizeof(char));
         }
 
@@ -65,8 +65,8 @@ void readFile(char* filename, File* file)
         free(str);
         str = NULL;
 
-        file -> rows = rows;
-        file -> cols = cols;
+        file->rows = rows;
+        file->cols = cols;
 
         fclose(f);
     }
