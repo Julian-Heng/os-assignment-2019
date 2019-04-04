@@ -12,11 +12,13 @@
 #define TRUE !FALSE
 
 /* Static functions */
-static void freeNode(LinkedListNode** node);
+static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc);
 static void clearListRecurse(LinkedListNode** node);
-static void setNextToNode(LinkedListNode* node, LinkedListNode* nextNode);
-static void setPrevToNode(LinkedListNode* node, LinkedListNode* prevNode);
+static void freeNode(LinkedListNode** node);
 
+/**
+ * Allocates memory for a node
+ **/
 LinkedListNode* initNode(void* newValue, int isMalloc)
 {
     LinkedListNode* newNode;
@@ -34,6 +36,9 @@ LinkedListNode* initNode(void* newValue, int isMalloc)
     return newNode;
 }
 
+/**
+ * Allocates memory for a list
+ **/
 LinkedList* initList(void)
 {
     LinkedList* newList;
@@ -50,6 +55,12 @@ LinkedList* initList(void)
     return newList;
 }
 
+/**
+ * Inserts a node to the front of the list
+ *
+ * Contains a void pointer for the data and a boolean value indicating
+ * if the data is malloced
+ **/
 void insertFirst(LinkedList* list, void* newValue, int isMalloc)
 {
     LinkedListNode* newNode;
@@ -68,16 +79,20 @@ void insertFirst(LinkedList* list, void* newValue, int isMalloc)
         /**
          * Set the previous pointer in the current head to newNode,
          * then set the next in newNode to current head.
-         * Set the head to newNode
          **/
-        setPrevToNode(list -> head, newNode);
-        setNextToNode(newNode, list -> head);
+        SET_PREV_TO_NODE(list -> head, newNode)
+        SET_NEXT_TO_NODE(newNode, list -> head)
         list -> head = newNode;
     }
 
     (list -> length)++;
 }
 
+/**
+ * Inserts a node to the end of the list
+ *
+ * Same parameters as insertFirst()
+ **/
 void insertLast(LinkedList* list, void* newValue, int isMalloc)
 {
     LinkedListNode* newNode;
@@ -94,12 +109,12 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
     else
     {
         /**
-         * Set the previous pointer in newNode to point to the
-         * current tail, then set the next in current tail to
-         * newNode. Then set newNode as the new tail
+         * Set the previous pointer in newNode to point to the current tail,
+         * then set the next in current tail to newNode. Then set newNode as
+         * the new tail
          **/
-        setPrevToNode(newNode, list -> tail);
-        setNextToNode(list -> tail, newNode);
+        SET_PREV_TO_NODE(newNode, list -> tail)
+        SET_NEXT_TO_NODE(list -> tail, newNode)
         list -> tail = newNode;
     }
 
@@ -107,20 +122,21 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
 }
 
 /**
- * Remove the first node in the list We return a pointer to a node because we
- * cannot free it within this function. Thus the calling function will need to
- * perform the freeing of the node. If we free the node within this function,
- * we lose access to the void pointer within the node
+ * Remove the first node in the list
+ *
+ * We return a pointer to a node because we cannot free it within this
+ * function. Thus the calling function will need to perform the freeing of the
+ * node. If we free the node within this function, we lose access to the void
+ * pointer within the node
  **/
 LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {
     LinkedListNode* node = list -> head;
 
+    /* If node is null, means that head is null and the list is empty */
     if (node)
     {
-        node = list -> head;
-        *voidPtr = node -> value;
-        *isMalloc = node -> isMalloc;
+        peek(node, voidPtr, isMalloc);
 
         if (list -> length == 1)
         {
@@ -150,11 +166,10 @@ LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
 {
     LinkedListNode* node = list -> tail;
 
+    /* If node is null, means that tail is null and the list is empty */
     if (node)
     {
-        node = list -> tail;
-        *voidPtr = node -> value;
-        *isMalloc = node -> isMalloc;
+        peek(node, voidPtr, isMalloc);
 
         if (list -> length == 1)
         {
@@ -179,21 +194,13 @@ LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
 
 /**
  * Getting the value in the first node without removing it from the list
+ *
  * voidPtr is where the value is stored and isMalloc is a boolean that
  * determines if it is stored on the heap or stack
  **/
 void peekFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    if (list && ! isListEmpty(list))
-    {
-        *voidPtr = list -> head -> value;
-        *isMalloc = list -> head -> isMalloc;
-    }
-    else
-    {
-        *voidPtr = NULL;
-        *isMalloc = -1;
-    }
+    peek(list -> head, voidPtr, isMalloc);
 }
 
 /**
@@ -201,10 +208,15 @@ void peekFirst(LinkedList* list, void** voidPtr, int* isMalloc)
  **/
 void peekLast(LinkedList* list, void** voidPtr, int* isMalloc)
 {
-    if (list && ! isListEmpty(list))
+    peek(list -> tail, voidPtr, isMalloc);
+}
+
+static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc)
+{
+    if (node)
     {
-        *voidPtr = list -> tail -> value;
-        *isMalloc = list -> tail -> isMalloc;
+        *voidPtr = node -> value;
+        *isMalloc = node -> isMalloc;
     }
     else
     {
@@ -218,6 +230,9 @@ int getListLength(LinkedList* list)
     return list -> length;
 }
 
+/**
+ * Removes list and list nodes
+ **/
 void clearList(LinkedList** list)
 {
     if (*list)
@@ -241,6 +256,11 @@ static void clearListRecurse(LinkedListNode** node)
     }
 }
 
+/**
+ * Wrapper function to free a node
+ *
+ * Required to check if the data a node holds is malloced or not
+ **/
 static void freeNode(LinkedListNode** node)
 {
     if ((*node) -> isMalloc && (*node) -> value)
@@ -251,24 +271,6 @@ static void freeNode(LinkedListNode** node)
 
     free(*node);
     *node = NULL;
-}
-
-static void setNextToNode(LinkedListNode* node, LinkedListNode* nextNode)
-{
-    /* If node and nextNode is not null */
-    if (node && nextNode)
-    {
-        node -> next = nextNode;
-    }
-}
-
-static void setPrevToNode(LinkedListNode* node, LinkedListNode* prevNode)
-{
-    /* If node and prevNode is not null */
-    if (node && prevNode)
-    {
-        node -> prev = prevNode;
-    }
 }
 
 int isListEmpty(LinkedList* list)
