@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        sscanf(argv[2], "%d", &max);
+        max = atoi(argv[2]);
         ret = run(argv[1], max);
     }
 
