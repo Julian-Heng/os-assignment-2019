@@ -8,7 +8,7 @@ TEST = $(SRC)/test
 all: dirs scheduler
 
 scheduler: dirs queue file
-	$(CC) $(CFLAGS) -o $(OBJ)/scheduler.o -c $(SRC)/scheduler.c
+	$(CC) $(CFLAGS) -pthread -o $(OBJ)/scheduler.o -c $(SRC)/scheduler.c
 	$(CC)	$(OBJ)/linkedList.o \
 			$(OBJ)/queue.o \
 			$(OBJ)/file.o \

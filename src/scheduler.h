@@ -2,9 +2,17 @@
 #define SCHEDULER_H
 
 #include "queue.h"
+#include "file.h"
+
+typedef struct Task
+{
+    int id;
+    int time;
+} Task;
 
 int run(char* filename, int max);
-void process(int task, int proc);
+void process(Task* task);
+void task(Queue* taskQueue, File* taskFile);
 void usage(void);
 
 #endif
