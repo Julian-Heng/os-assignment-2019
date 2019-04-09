@@ -54,13 +54,13 @@ typedef struct LinkedList
 #define SET_NEXT_TO_NODE(a, b) \
     if ((a) && (b)) \
     { \
-        (a) -> next = (b); \
+        (a)->next = (b); \
     }
 
 #define SET_PREV_TO_NODE(a, b) \
     if ((a) && (b)) \
     { \
-        (a) -> prev = (b); \
+        (a)->prev = (b); \
     }
 
 /* Function prototypes */
