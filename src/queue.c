@@ -35,7 +35,7 @@ Queue* initQueue(int max)
 int enqueue(Queue* queue, void* val, int isMalloc)
 {
     int ret = FALSE;
-    if (getQueueLength(queue) < queue->max)
+    if (queue->link->length < queue->max)
     {
         insertLast(queue->link, val, isMalloc);
         ret = TRUE;
@@ -48,14 +48,14 @@ int enqueue(Queue* queue, void* val, int isMalloc)
  * Removes from the queue. Garbage collection needs to be handled by the
  * calling function
  **/
-QueueNode* dequeue(Queue* queue, void** val, int* i)
+QueueNode* dequeue(Queue* queue, void** val, int* isMalloc)
 {
-    return removeFirst(queue->link, val, i);
+    return removeFirst(queue->link, val, isMalloc);
 }
 
-void peek(Queue* queue, void** val, int* i)
+void peek(Queue* queue, void** val, int* isMalloc)
 {
-    peekFirst(queue->link, val, i);
+    peekFirst(queue->link, val, isMalloc);
 }
 
 int getQueueLength(Queue* queue)
