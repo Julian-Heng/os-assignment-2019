@@ -16,6 +16,7 @@ QueueNode* dequeue(Queue* queue, void** val, int* isMalloc);
 void peek(Queue* queue, void** val, int* isMalloc);
 int getQueueLength(Queue* queue);
 int getQueueMaxLength(Queue* queue);
+int getQueueRemainingCapacity(Queue* queue);
 void clearQueue(Queue** queue);
 int isQueueEmpty(Queue* queue);
 int isQueueFull(Queue* queue);

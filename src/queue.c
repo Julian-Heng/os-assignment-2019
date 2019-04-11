@@ -68,6 +68,11 @@ int getQueueMaxLength(Queue* queue)
     return queue->max;
 }
 
+int getQueueRemainingCapacity(Queue* queue)
+{
+    return queue->max - queue->link->length;
+}
+
 void clearQueue(Queue** queue)
 {
     clearList(&((*queue)->link));
