@@ -7,14 +7,25 @@ TEST 	= $(SRC)/test
 REPORT 	= ./docs/report
 
 all: $(BUILD) $(OBJ) scheduler
+debug: $(BUILD) $(OBJ) scheduler_debug
 
 scheduler: $(BUILD) queue file
-	$(CC) $(CFLAGS) -pthread -o $(OBJ)/scheduler.o -c $(SRC)/scheduler.c
-	$(CC)	$(OBJ)/linkedList.o \
-			$(OBJ)/queue.o \
-			$(OBJ)/file.o \
-			$(OBJ)/scheduler.o \
-			-o $(BUILD)/scheduler
+	$(CC) $(CFLAGS) -o $(OBJ)/scheduler.o -c $(SRC)/scheduler.c
+	$(CC) -pthread 	$(OBJ)/linkedList.o \
+					$(OBJ)/queue.o \
+					$(OBJ)/file.o \
+					$(OBJ)/scheduler.o \
+					-pthread \
+					-o $(BUILD)/scheduler
+
+scheduler_debug: $(BUILD) queue file
+	$(CC) $(CFLAGS) -DDEBUG=1 -o $(OBJ)/scheduler.o -c $(SRC)/scheduler.c
+	$(CC) -pthread 	$(OBJ)/linkedList.o \
+					$(OBJ)/queue.o \
+					$(OBJ)/file.o \
+					$(OBJ)/scheduler.o \
+					-pthread \
+					-o $(BUILD)/scheduler
 
 linkedList: $(OBJ)
 	$(CC) $(CFLAGS) -o $(OBJ)/linkedList.o -c $(SRC)/linkedList.c
