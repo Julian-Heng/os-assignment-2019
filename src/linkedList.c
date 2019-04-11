@@ -278,5 +278,5 @@ int isListEmpty(LinkedList* list)
     return (list &&
             (! (list->head)) &&
             (! (list->tail)) &&
-            list->length == 0) ? TRUE : FALSE;
+            list->length == 0);
 }
