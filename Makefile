@@ -4,6 +4,7 @@ BUILD = ./build
 OBJ = $(BUILD)/obj
 SRC = ./src
 TEST = $(SRC)/test
+REPORT = ./docs/report
 
 all: dirs scheduler
 
@@ -55,8 +56,11 @@ test_file: file queue
 			$(OBJ)/test_file.o \
 			-o $(BUILD)/test_file
 
+docs: dirs
+	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
+
 clean:
-	$(RM) -rv $(BUILD)
+	$(RM) -rv $(BUILD) $(REPORT)
 
 dirs:
 	if [ ! -e "$(BUILD)" ]; then \
@@ -64,4 +68,7 @@ dirs:
 	fi
 	if [ ! -e "$(OBJ)" ]; then \
 		mkdir $(OBJ); \
+	fi
+	if [ ! -e "$(REPORT)" ]; then \
+		mkdir $(REPORT); \
 	fi
