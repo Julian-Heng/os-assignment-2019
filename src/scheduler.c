@@ -18,13 +18,22 @@ int main(int argc, char** argv)
 
     if (argc < 3)
     {
-        usage();
+        usage(argv[0]);
         ret = 1;
     }
     else
     {
         max = atoi(argv[2]);
-        ret = run(argv[1], max);
+
+        if (max <= 10 && max > 0)
+        {
+            ret = run(argv[1], max);
+        }
+        else
+        {
+            usage(argv[0]);
+            ret = 2;
+        }
     }
 
     return ret;
@@ -50,9 +59,7 @@ int run(char* filename, int max)
     {
         taskNode = dequeue(readyQueue, (void**)&currentTask, &mallocCheck);
         process(currentTask);
-        /*
         fprintf(stderr, "Task%d %d\n", currentTask->id, currentTask->time);
-        */
         task(readyQueue, &taskList);
         task(readyQueue, &taskList);
 
@@ -122,7 +129,7 @@ void task(Queue* taskQueue, File* taskFile)
     }
 }
 
-void usage(void)
+void usage(char* exe)
 {
-    fprintf(stdout, "Usage: scheduler [task-file]\n");
+    fprintf(stderr, "Usage: %s [task-file] [1-10]\n", exe);
 }

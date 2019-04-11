@@ -13,6 +13,6 @@ typedef struct Task
 int run(char* filename, int max);
 void process(Task* task);
 void task(Queue* taskQueue, File* taskFile);
-void usage(void);
+void usage(char* exe);
 
 #endif
