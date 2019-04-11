@@ -1,4 +1,4 @@
-CC 	= gcc
+CC 		= gcc
 CFLAGS 	= -g -Wall -Werror -ansi -pedantic
 BUILD 	= ./build
 OBJ 	= $(BUILD)/obj
