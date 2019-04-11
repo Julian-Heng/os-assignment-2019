@@ -1,14 +1,14 @@
-CC = gcc
-CFLAGS = -g -Wall -Werror -ansi -pedantic
-BUILD = ./build
-OBJ = $(BUILD)/obj
-SRC = ./src
-TEST = $(SRC)/test
-REPORT = ./docs/report
+CC 	= gcc
+CFLAGS 	= -g -Wall -Werror -ansi -pedantic
+BUILD 	= ./build
+OBJ 	= $(BUILD)/obj
+SRC 	= ./src
+TEST 	= $(SRC)/test
+REPORT 	= ./docs/report
 
-all: dirs scheduler
+all: $(BUILD) $(OBJ) scheduler
 
-scheduler: dirs queue file
+scheduler: $(BUILD) queue file
 	$(CC) $(CFLAGS) -pthread -o $(OBJ)/scheduler.o -c $(SRC)/scheduler.c
 	$(CC)	$(OBJ)/linkedList.o \
 			$(OBJ)/queue.o \
@@ -16,13 +16,13 @@ scheduler: dirs queue file
 			$(OBJ)/scheduler.o \
 			-o $(BUILD)/scheduler
 
-linkedList: dirs
+linkedList: $(OBJ)
 	$(CC) $(CFLAGS) -o $(OBJ)/linkedList.o -c $(SRC)/linkedList.c
 
 queue: linkedList
 	$(CC) $(CFLAGS) -o $(OBJ)/queue.o -c $(SRC)/queue.c
 
-file: dirs
+file: $(OBJ)
 	$(CC) $(CFLAGS) -o $(OBJ)/file.o -c $(SRC)/file.c
 
 test: runtest_linkedList runtest_queue test_file
@@ -56,19 +56,13 @@ test_file: file queue
 			$(OBJ)/test_file.o \
 			-o $(BUILD)/test_file
 
-docs: dirs
+docs: $(REPORT)
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
 
 clean:
 	$(RM) -rv $(BUILD) $(REPORT)
 
-dirs:
-	if [ ! -e "$(BUILD)" ]; then \
-		mkdir $(BUILD); \
-	fi
-	if [ ! -e "$(OBJ)" ]; then \
-		mkdir $(OBJ); \
-	fi
-	if [ ! -e "$(REPORT)" ]; then \
-		mkdir $(REPORT); \
+$(BUILD) $(OBJ) $(REPORT):
+	if [ ! -e "$@" ]; then \
+		mkdir -p $@; \
 	fi
