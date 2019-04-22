@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,12 +13,19 @@
 #define FALSE 0
 #define TRUE !FALSE
 
-#define ARRIVE_FMT   "Arrival time: %02d:%02d:%02d\n"
-#define COMPLETE_FMT "Completion time: %02d:%02d:%02d\n\n"
+#define NUM_THREADS 3
+
+#define TIME_FMT            "%02d:%02d:%02d"
+#define TASK_TALLY_FMT      "Number of tasks put into Ready-Queue: %d\n"
+#define CPU_TERMINATE_FMT   "CPU-%d terminates after servicing %d tasks\n"
+
+#define RESULT_AVG_WAIT     "Average waiting time: %.2f secs\n"
+#define RESULT_AVG_TURN     "Average turnaround time: %.2f secs\n"
+
+#define LOG_FILE            "simulation_log"
 
 pthread_mutex_t queueMutex  = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t taskMutex   = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t cpuMutex    = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t logMutex    = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t queueFull    = PTHREAD_COND_INITIALIZER;
 pthread_cond_t queueEmpty   = PTHREAD_COND_INITIALIZER;
@@ -53,13 +61,23 @@ int main(int argc, char** argv)
 int run(char* filename, int max)
 {
     pthread_t taskThread;
-    pthread_t cpuThread;
+    pthread_t cpuThread[3];
     SharedData sharedData;
+    CpuData cpuData[3];
 
     Queue* readyQueue;
     File* taskFile;
 
+    int i;
     int ret;
+
+    int totalTasks;
+    int totalWaitingTime;
+    int totalTurnaroundTime;
+
+    totalTasks = 0;
+    totalWaitingTime = 0;
+    totalTurnaroundTime = 0;
 
     taskFile = (File*)malloc(sizeof(File));
     readyQueue = initQueue(max);
@@ -68,11 +86,39 @@ int run(char* filename, int max)
     sharedData.readyQueue = readyQueue;
     sharedData.taskFile = taskFile;
 
+    for (i = 0; i < NUM_THREADS; i++)
+    {
+        cpuData[i].data = &sharedData;
+        cpuData[i].id = i + 1;
+        cpuData[i].numTasks = 0;
+        cpuData[i].totalWaitingTime = 0;
+        cpuData[i].totalTurnaroundTime = 0;
+    }
+
     pthread_create(&taskThread, NULL, task, &sharedData);
-    pthread_create(&cpuThread, NULL, process, &sharedData);
+    for (i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_create(&cpuThread[i], NULL, process, &cpuData[i]);
+    }
 
     pthread_join(taskThread, NULL);
-    pthread_join(cpuThread, NULL);
+    for (i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_join(cpuThread[i], NULL);
+    }
+
+    for (i = 0; i < NUM_THREADS; i++)
+    {
+        totalTasks += cpuData[i].numTasks;
+        totalWaitingTime += cpuData[i].totalWaitingTime;
+        totalTurnaroundTime += cpuData[i].totalTurnaroundTime;
+    }
+
+    fprintf(stdout, "Number of tasks: %d\n", totalTasks);
+    fprintf(stdout, RESULT_AVG_WAIT, INT_REAL_DIV(totalWaitingTime,
+                                                  totalTasks));
+    fprintf(stdout, RESULT_AVG_TURN, INT_REAL_DIV(totalTurnaroundTime,
+                                                  totalTasks));
 
     clearQueue(&readyQueue);
     clearQueue(&(taskFile->data));
@@ -90,67 +136,63 @@ void* task(void* args)
     Queue* readyQueue = sharedData->readyQueue;
     File* taskFile = sharedData->taskFile;
 
-    printf("task(): sharedData = %p\n", (void*)sharedData);
-    printf("task(): readyQueue = %p\n", (void*)readyQueue);
-    printf("task(): taskFile = %p\n", (void*)taskFile);
+    int numTasks = 0;
+    time_t rawSecs;
 
-    while (! isQueueEmpty(taskFile->data) ||
-           ! isQueueEmpty(readyQueue))
+    while (! isQueueEmpty(taskFile->data))
     {
-        printf("task(): Waiting for queueMutex\n");
         pthread_mutex_lock(&queueMutex);
-        printf("task(): Got queueMutex\n");
 
         if (getQueueRemainingCapacity(readyQueue) < 2)
         {
             /* readyQueue is full */
-            printf("task(): readyQueue is full\n");
-
             pthread_cond_signal(&queueFull);
-            printf("task(): Sent queueFull signal\n");
 
             while (getQueueRemainingCapacity(readyQueue) < 2)
             {
-                printf("task(): Waiting for queueEmpty signal\n");
                 pthread_cond_wait(&queueEmpty, &queueMutex);
-                printf("task(): Received queueEmpty signal\n");
             }
         }
 
-        printf("task(): Adding tasks to readyQueue until full\n");
         while (getQueueRemainingCapacity(readyQueue) > 1 &&
                ! isQueueEmpty(taskFile->data))
         {
             if (! isQueueEmpty(taskFile->data))
             {
                 taskThreadAddTask(readyQueue, taskFile);
+                numTasks++;
             }
 
             if (! isQueueEmpty(taskFile->data))
             {
                 taskThreadAddTask(readyQueue, taskFile);
+                numTasks++;
             }
-
-            printf("task(): Remaining tasks: %d\n",
-                    getQueueLength(taskFile->data));
-            printf("task(): Remaining readyQueue capacity: %d\n",
-                    getQueueRemainingCapacity(readyQueue));
         }
 
         pthread_mutex_unlock(&queueMutex);
-        printf("task(): Released queue lock\n");
 
         pthread_cond_signal(&queueFull);
-        printf("task(): Sent queueFull signal\n");
     }
 
-    printf("task(): Exiting thread\n");
+    time(&rawSecs);
+
+    pthread_mutex_lock(&logMutex);
+    fprintf(stdout, TASK_TALLY_FMT, numTasks);
+    fprintf(stdout, "Terminate at time: ");
+    printTime(stdout, rawSecs);
+    fprintf(stdout, "\n\n");
+    pthread_mutex_unlock(&logMutex);
+
     pthread_exit(NULL);
 }
 
 void* process(void* args)
 {
-    SharedData* sharedData = (SharedData*)args;
+    CpuData* cpuData = (CpuData*)args;
+    SharedData* sharedData = cpuData->data;
+    int id = cpuData->id;
+
     Queue* readyQueue = sharedData->readyQueue;
     File* taskFile = sharedData->taskFile;
 
@@ -158,75 +200,71 @@ void* process(void* args)
     Task* task;
     int isMalloc;
 
-    time_t rawSecs;
-    struct tm* timeinfo;
-
-    printf("process(): sharedData = %p\n", (void*)sharedData);
-    printf("process(): readyQueue = %p\n", (void*)readyQueue);
-    printf("process(): taskFile = %p\n", (void*)taskFile);
-
     while (! isQueueEmpty(taskFile->data) ||
            ! isQueueEmpty(readyQueue))
     {
-        printf("process(): Waiting for queueMutex\n");
         pthread_mutex_lock(&queueMutex);
-        printf("process(): Got queueMutex\n");
 
-        if (isQueueEmpty(readyQueue))
+        while (isQueueEmpty(readyQueue))
         {
             /* readyQueue is empty */
-            printf("process(): readyQueue is empty\n");
-
             pthread_cond_signal(&queueEmpty);
-            printf("process(): Sent queueEmpty signal\n");
 
             while (isQueueEmpty(readyQueue))
             {
-                printf("process(): Waiting for queueFull signal\n");
                 pthread_cond_wait(&queueFull, &queueMutex);
-                printf("process(): Received queueFull signal\n");
             }
         }
 
-        while (! isQueueEmpty(readyQueue))
-        {
-            node = dequeue(readyQueue, (void**)&task, &isMalloc);
-
-            printf("Task %d\n", task->id);
-
-            time(&rawSecs);
-            timeinfo = localtime(&rawSecs);
-            printf(ARRIVE_FMT, timeinfo->tm_hour,
-                               timeinfo->tm_min,
-                               timeinfo->tm_sec);
-            sleep(task->time);
-            time(&rawSecs);
-            timeinfo = localtime(&rawSecs);
-            printf(COMPLETE_FMT, timeinfo->tm_hour,
-                                 timeinfo->tm_min,
-                                 timeinfo->tm_sec);
-
-            free(task);
-            task = NULL;
-
-            free(node);
-            node = NULL;
-        }
-
-            pthread_mutex_unlock(&queueMutex);
-            printf("process(): Released queue lock\n");
-
-        /* readyQueue is empty */
-        printf("process(): readyQueue is empty\n");
+        node = dequeue(readyQueue, (void**)&task, &isMalloc);
 
         pthread_mutex_unlock(&queueMutex);
-        printf("task(): Released queue lock\n");
 
-        pthread_cond_signal(&queueEmpty);
-        printf("process(): Sent queueEmpty signal\n");
+        time(&(task->serviceTime));
+        (cpuData->numTasks)++;
+        (cpuData->totalWaitingTime) += (task->serviceTime) -
+                                       (task->arrivalTime);
+
+        pthread_mutex_lock(&logMutex);
+
+        fprintf(stdout, "Statistics for CPU-%d\n", id);
+        fprintf(stdout, "Task %d\n", task->id);
+        fprintf(stdout, "Arrival Time: ");
+        printTime(stdout, task->arrivalTime);
+        fprintf(stdout, "\nService Time: ");
+        printTime(stdout, task->serviceTime);
+        fprintf(stdout, "\n\n");
+
+        pthread_mutex_unlock(&logMutex);
+
+        sleep(task->time);
+        time(&(task->completionTime));
+        (cpuData->totalTurnaroundTime) += (task->completionTime) -
+                                          (task->arrivalTime);
+
+        pthread_mutex_lock(&logMutex);
+
+        fprintf(stdout, "Statistics for CPU-%d\n", id);
+        fprintf(stdout, "Task %d\n", task->id);
+        fprintf(stdout, "Arrival Time: ");
+        printTime(stdout, task->arrivalTime);
+        fprintf(stdout, "\nCompletion Time: ");
+        printTime(stdout, task->completionTime);
+        fprintf(stdout, "\n\n");
+
+        pthread_mutex_unlock(&logMutex);
+
+        free(task);
+        task = NULL;
+
+        free(node);
+        node = NULL;
     }
 
-    printf("process(): Exiting thread\n");
+    pthread_mutex_lock(&logMutex);
+    fprintf(stdout, CPU_TERMINATE_FMT, id, cpuData->numTasks);
+    pthread_mutex_unlock(&logMutex);
+
     pthread_exit(NULL);
 }
 
@@ -237,15 +275,17 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList)
 
     char* str;
     int taskId;
-    int time;
+    int cpuBurst;
     int isMalloc;
 
     taskNode = (Task*)malloc(sizeof(Task));
     node = dequeue(taskList->data, (void**)&str, &isMalloc);
 
-    sscanf(str, "task%d %d", &taskId, &time);
+    sscanf(str, "task%d %d", &taskId, &cpuBurst);
     taskNode->id = taskId;
-    taskNode->time = time;
+    taskNode->time = cpuBurst;
+    taskNode->cpu = INT_MAX;
+    time(&(taskNode->arrivalTime));
     enqueue(taskQueue, taskNode, isMalloc);
 
     free(str);
@@ -253,6 +293,14 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList)
 
     str = NULL;
     node = NULL;
+}
+
+void printTime(FILE* f, time_t secs)
+{
+    struct tm* timeinfo = localtime(&secs);
+    fprintf(f, TIME_FMT, timeinfo->tm_hour,
+                         timeinfo->tm_min,
+                         timeinfo->tm_sec);
 }
 
 void usage(char* exe)
