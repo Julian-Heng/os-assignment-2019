@@ -34,15 +34,12 @@ typedef struct CpuData
     ((double)(a) / (double)(b))
 
 int run(char* filename, int max);
-/*
-void process(Task* task);
-void task(Queue* taskQueue, File* taskFile);
-*/
 void* task(void* args);
 void* process(void* args);
 
-void taskThreadAddTask(Queue* taskQueue, File* taskFile);
+void taskThreadAddTask(Queue* taskQueue, File* taskFile, FILE* logFile);
 
+void printCpuStat(FILE* f, int id, Task* task);
 void printTime(FILE* f, time_t secs);
 void usage(char* exe);
 

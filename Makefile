@@ -15,7 +15,6 @@ scheduler: $(BUILD) queue file
 					$(OBJ)/queue.o \
 					$(OBJ)/file.o \
 					$(OBJ)/scheduler.o \
-					-pthread \
 					-o $(BUILD)/scheduler
 
 scheduler_debug: $(BUILD) queue file
@@ -24,7 +23,6 @@ scheduler_debug: $(BUILD) queue file
 					$(OBJ)/queue.o \
 					$(OBJ)/file.o \
 					$(OBJ)/scheduler.o \
-					-pthread \
 					-o $(BUILD)/scheduler
 
 linkedList: $(OBJ)
@@ -71,7 +69,7 @@ docs: $(REPORT)
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
 
 clean:
-	$(RM) -rv $(BUILD) $(REPORT)
+	$(RM) -rv $(BUILD) $(REPORT) *_log
 
 $(BUILD) $(OBJ) $(REPORT):
 	if [ ! -e "$@" ]; then \
