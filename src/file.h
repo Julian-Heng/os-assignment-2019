@@ -5,11 +5,18 @@
 
 typedef struct File
 {
+    char* filename;
     Queue* data;
     int rows;
     int cols;
 } File;
 
-void readFile(char* filename, File* file);
+File* initFile(int size);
+void readFile(File* file);
+void writeFile(File* file, char* mode);
+void setFilename(char* filename, File* file);
+void addLineToFile(char* line, File* file);
+void updateFileCount(File* file);
+void freeFile(File** file);
 
 #endif

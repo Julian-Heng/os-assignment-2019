@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -6,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    File f;
+    File* f;
     QueueNode* n;
 
     char* str;
@@ -14,18 +15,21 @@ int main(int argc, char** argv)
 
     if (argc == 1)
     {
-        fprintf(stdout, "Usage: ./test_file filename\n");
+        fprintf(stdout, "Usage: ./test_file_read filename\n");
     }
     else
     {
         for (i = 1; i < argc; i++)
         {
             fprintf(stdout, "\n");
-            readFile(argv[i], &f);
 
-            while (! isQueueEmpty(f.data))
+            f = initFile(INT_MAX);
+            setFilename(argv[i], f);
+            readFile(f);
+
+            while (! isQueueEmpty(f->data))
             {
-                n = dequeue(f.data, (void*)&str, &j);
+                n = dequeue(f->data, (void*)&str, &j);
                 fprintf(stdout, "%s\n", str);
 
                 free(n->value);
@@ -35,10 +39,11 @@ int main(int argc, char** argv)
                 n = NULL;
             }
 
-            fprintf(stdout, "\nFile rows: %d\n", f.rows);
-            fprintf(stdout, "File cols: %d\n", f.cols);
+            fprintf(stdout, "\nFile name:%s\n", f->filename);
+            fprintf(stdout, "File rows: %d\n", f->rows);
+            fprintf(stdout, "File cols: %d\n", f->cols);
 
-            clearQueue(&(f.data));
+            freeFile(&f);
         }
     }
 
