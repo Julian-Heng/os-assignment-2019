@@ -19,15 +19,16 @@ typedef struct SharedData
     Queue* readyQueue;
     File* taskFile;
     File* logFile;
+
+    int* numTasks;
+    int* totalWaitingTime;
+    int* totalTurnaroundTime;
 } SharedData;
 
 typedef struct CpuData
 {
     SharedData* data;
     int id;
-    int numTasks;
-    int totalWaitingTime;
-    int totalTurnaroundTime;
 } CpuData;
 
 #define INT_REAL_DIV(a, b) \

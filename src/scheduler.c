@@ -17,6 +17,7 @@
 #define MIN_ARGS 3
 #define NUM_THREADS 3
 
+#define SUCCESS 0
 #define ERROR_ARGS 1
 #define ERROR_OUT_OF_BOUNDS 2
 
@@ -42,6 +43,7 @@
 
 pthread_mutex_t queueMutex  = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t logMutex    = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t statMutex   = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t queueFull    = PTHREAD_COND_INITIALIZER;
 pthread_cond_t queueEmpty   = PTHREAD_COND_INITIALIZER;
@@ -85,14 +87,13 @@ int run(char* filename, int max)
     File* taskFile;
     File* logFile;
 
-    int i;
-    int ret;
-
-    int totalTasks;
+    int numTasks;
     int totalWaitingTime;
     int totalTurnaroundTime;
 
-    totalTasks = 0;
+    int i;
+
+    numTasks = 0;
     totalWaitingTime = 0;
     totalTurnaroundTime = 0;
 
@@ -109,15 +110,16 @@ int run(char* filename, int max)
     sharedData.taskFile = taskFile;
     sharedData.logFile = logFile;
 
+    sharedData.numTasks = &numTasks;
+    sharedData.totalWaitingTime = &totalWaitingTime;
+    sharedData.totalTurnaroundTime = &totalTurnaroundTime;
+
     logger(sharedData.logFile, "---\n");
 
     for (i = 0; i < NUM_THREADS; i++)
     {
         cpuData[i].data = &sharedData;
         cpuData[i].id = i + 1;
-        cpuData[i].numTasks = 0;
-        cpuData[i].totalWaitingTime = 0;
-        cpuData[i].totalTurnaroundTime = 0;
     }
 
     pthread_create(&taskThread, NULL, task, &sharedData);
@@ -132,27 +134,19 @@ int run(char* filename, int max)
         pthread_join(cpuThread[i], NULL);
     }
 
-    for (i = 0; i < NUM_THREADS; i++)
-    {
-        totalTasks += cpuData[i].numTasks;
-        totalWaitingTime += cpuData[i].totalWaitingTime;
-        totalTurnaroundTime += cpuData[i].totalTurnaroundTime;
-    }
-
-    logger(logFile, TASK_NUM, totalTasks);
+    logger(logFile, TASK_NUM, numTasks);
     logger(logFile, RESULT_AVG_WAIT, INT_REAL_DIV(totalWaitingTime,
-                                                  totalTasks));
+                                                  numTasks));
     logger(logFile, RESULT_AVG_TURN, INT_REAL_DIV(totalTurnaroundTime,
-                                                  totalTasks));
+                                                  numTasks));
 
     clearQueue(&readyQueue);
 
-    writeFile(sharedData.logFile, "a");
-    freeFile(&(sharedData.logFile));
-    freeFile(&(sharedData.taskFile));
+    writeFile(logFile, "a");
+    freeFile(&logFile);
+    freeFile(&taskFile);
 
-    ret = 0;
-    return ret;
+    return SUCCESS;
 }
 
 void* task(void* args)
@@ -238,7 +232,11 @@ void* cpu(void* args)
     QueueNode* node;
     Task* task;
     int isMalloc;
+
+    int numTasks;
     char* timeStr;
+
+    numTasks = 0;
 
     while (TRUE)
     {
@@ -248,7 +246,7 @@ void* cpu(void* args)
         {
             pthread_mutex_unlock(&queueMutex);
             pthread_mutex_lock(&logMutex);
-            logger(logFile, CPU_TERMINATE, id, cpuData->numTasks);
+            logger(logFile, CPU_TERMINATE, id, numTasks);
             pthread_mutex_unlock(&logMutex);
 
             pthread_exit(NULL);
@@ -270,9 +268,12 @@ void* cpu(void* args)
         pthread_mutex_unlock(&queueMutex);
 
         time(&(task->serviceTime));
-        (cpuData->numTasks)++;
-        (cpuData->totalWaitingTime) += (task->serviceTime) -
-                                       (task->arrivalTime);
+        pthread_mutex_lock(&statMutex);
+        numTasks++;
+        (*(sharedData->numTasks))++;
+        (*(sharedData->totalWaitingTime)) += (task->serviceTime) -
+                                             (task->arrivalTime);
+        pthread_mutex_unlock(&statMutex);
 
         pthread_mutex_lock(&logMutex);
 
@@ -287,8 +288,10 @@ void* cpu(void* args)
 
         sleep(task->time);
         time(&(task->completionTime));
-        (cpuData->totalTurnaroundTime) += (task->completionTime) -
-                                          (task->arrivalTime);
+        pthread_mutex_lock(&statMutex);
+        (*(sharedData->totalTurnaroundTime)) += (task->completionTime) -
+                                                (task->arrivalTime);
+        pthread_mutex_unlock(&statMutex);
 
         pthread_mutex_lock(&logMutex);
 
