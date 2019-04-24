@@ -80,7 +80,10 @@ test_file: file queue
 			-o $(BUILD)/test_file_write
 
 docs: $(REPORT)
-	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
+	{ printf "$$ %s\\n" "ls -Rl"; ls -Rl .; } \
+		> $(REPORT)/file_listing
+	pdflatex -output-directory $(REPORT) -shell-escape \
+			 ./docs/AssignmentDoc.tex
 
 clean:
 	$(RM) -rv $(BUILD) $(REPORT) *_log
@@ -89,3 +92,5 @@ $(BUILD) $(OBJ) $(REPORT):
 	if [ ! -e "$@" ]; then \
 		mkdir -p $@; \
 	fi
+
+.PHONY: clean docs

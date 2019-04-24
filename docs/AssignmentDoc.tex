@@ -9,6 +9,7 @@
 ]{geometry}
 
 \usepackage{color}
+\usepackage[ddmmyyyy]{datetime}
 \usepackage{enumitem}
 \usepackage{fancyhdr}
 \usepackage{inconsolata}
@@ -25,21 +26,29 @@
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
-\lstset
+\lstdefinestyle{numbers} {numbers=left, numberstyle=\ttfamily}
+\lstdefinestyle{color}
 {
-    % -- Settings -- %
+    commentstyle=\color{dkgreen},
+    keywordstyle=\color{blue},
+    stringstyle=\color{mauve},
+}
+
+\lstdefinestyle{common}
+{
     breakatwhitespace=true,
     breaklines=true,
     columns=fixed,
     showstringspaces=false,
     xleftmargin=0.65cm,
-    % -- Looks -- %
     basicstyle=\footnotesize\ttfamily,
-    commentstyle=\color{dkgreen},
-    keywordstyle=\color{blue},
-    numberstyle=\ttfamily\color{gray},
-    stringstyle=\color{mauve}
+    tabsize=4
 }
+
+\lstdefinestyle{code} {style=common, style=color, style=numbers}
+\lstdefinestyle{raw} {style=common, style=color}
+
+\UseRawInputEncoding
 
 \fancyhf{}
 \setlength\columnseprule{0.4pt}
@@ -47,7 +56,7 @@
 
 \title{\huge \textbf{Operating Systems Assignment\\Scheduler Program}}
 \author{Julian Heng (19473701)}
-\date{April, 2019}
+\date{\today}
 
 \begin{document}
 
@@ -61,31 +70,37 @@
 \fancyhf[FC]{\thepage}
 \fancyhf[FL]{\footnotesize{Julian Heng (19473701)}}
 
+\section{Directory Structure}
+\lstinputlisting[language={},style=raw]{./docs/report/file_listing}\newpage
+
 \section{Source Code}
 \fancyhf[HR]{\footnotesize{Source Code}}
 
+\fancyhead[HR]{\footnotesize{Makefile}}
+\lstinputlisting[language=Make,style=code]{./Makefile}\newpage
+
 \fancyhead[HR]{\footnotesize{linkedList.c}}
-\lstinputlisting[language=C]{./src/linkedList.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/linkedList.c}\newpage
 
 \fancyhead[HR]{\footnotesize{linkedList.h}}
-\lstinputlisting[language=C]{./src/linkedList.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/linkedList.h}\newpage
 
 \fancyhead[HR]{\footnotesize{queue.c}}
-\lstinputlisting[language=C]{./src/queue.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/queue.c}\newpage
 
 \fancyhead[HR]{\footnotesize{queue.h}}
-\lstinputlisting[language=C]{./src/queue.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/queue.h}\newpage
 
 \fancyhead[HR]{\footnotesize{file.c}}
-\lstinputlisting[language=C]{./src/file.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/file.c}\newpage
 
 \fancyhead[HR]{\footnotesize{file.h}}
-\lstinputlisting[language=C]{./src/file.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/file.h}\newpage
 
 \fancyhead[HR]{\footnotesize{scheduler.c}}
-\lstinputlisting[language=C]{./src/scheduler.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/scheduler.c}\newpage
 
 \fancyhead[HR]{\footnotesize{scheduler.h}}
-\lstinputlisting[language=C]{./src/scheduler.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/scheduler.h}\newpage
 
 \end{document}
