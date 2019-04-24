@@ -24,6 +24,9 @@
 #define TIME                "%02d:%02d:%02d"
 #define TIME_LENGTH         9
 
+#define SEPARATOR           "-----\n"
+
+#define TASK_SCAN           "task%d %d\n"
 #define TASK_1              "task%d: %d\n"
 #define TASK_2              "Task %d\n"
 #define TASK_NUM            "Number of tasks: %d\n"
@@ -36,8 +39,8 @@
 #define COMPLETE_TIME       "Completion Time: %s\n"
 #define CPU_TERMINATE       "CPU-%d terminates after servicing %d tasks\n\n"
 
-#define RESULT_AVG_WAIT     "Average waiting time: %.2f secs\n"
-#define RESULT_AVG_TURN     "Average turnaround time: %.2f secs\n"
+#define RESULT_AVG_WAIT     "Average waiting time: %.3f secs\n"
+#define RESULT_AVG_TURN     "Average turnaround time: %.3f secs\n"
 
 #define LOG_FILE            "simulation_log"
 
@@ -114,7 +117,7 @@ int run(char* filename, int max)
     sharedData.totalWaitingTime = &totalWaitingTime;
     sharedData.totalTurnaroundTime = &totalTurnaroundTime;
 
-    logger(sharedData.logFile, "---\n");
+    logger(sharedData.logFile, SEPARATOR);
 
     for (i = 0; i < NUM_THREADS; i++)
     {
@@ -252,7 +255,7 @@ void* cpu(void* args)
             pthread_exit(NULL);
         }
 
-        while (isQueueEmpty(readyQueue))
+        if (isQueueEmpty(readyQueue))
         {
             /* readyQueue is empty */
             pthread_cond_signal(&queueEmpty);
@@ -265,6 +268,7 @@ void* cpu(void* args)
 
         node = dequeue(readyQueue, (void**)&task, &isMalloc);
 
+
         pthread_mutex_unlock(&queueMutex);
 
         time(&(task->serviceTime));
@@ -275,34 +279,36 @@ void* cpu(void* args)
                                              (task->arrivalTime);
         pthread_mutex_unlock(&statMutex);
 
-        pthread_mutex_lock(&logMutex);
 
+        pthread_mutex_lock(&logMutex);
         strTime(&timeStr, task->serviceTime);
         printCpuStat(logFile, id, task);
         logger(logFile, SERVICE_TIME, timeStr);
         logger(logFile, "\n");
         free(timeStr);
         timeStr = NULL;
-
         pthread_mutex_unlock(&logMutex);
+
 
         sleep(task->time);
         time(&(task->completionTime));
+
+
         pthread_mutex_lock(&statMutex);
         (*(sharedData->totalTurnaroundTime)) += (task->completionTime) -
                                                 (task->arrivalTime);
         pthread_mutex_unlock(&statMutex);
 
-        pthread_mutex_lock(&logMutex);
 
+        pthread_mutex_lock(&logMutex);
         strTime(&timeStr, task->completionTime);
         printCpuStat(logFile, id, task);
         logger(logFile, COMPLETE_TIME, timeStr);
         logger(logFile, "\n");
         free(timeStr);
         timeStr = NULL;
-
         pthread_mutex_unlock(&logMutex);
+
 
         free(task);
         task = NULL;
@@ -319,23 +325,19 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList, File* logFile)
 
     char* timeStr;
     char* str;
-    int taskId;
-    int cpuBurst;
     int isMalloc;
 
     taskNode = (Task*)malloc(sizeof(Task));
     node = dequeue(taskList->data, (void**)&str, &isMalloc);
 
-    sscanf(str, "task%d %d\n", &taskId, &cpuBurst);
-    taskNode->id = taskId;
-    taskNode->time = cpuBurst;
+    sscanf(str, TASK_SCAN, &(taskNode->id), &(taskNode->time));
     taskNode->cpu = INT_MAX;
     time(&(taskNode->arrivalTime));
     enqueue(taskQueue, taskNode, isMalloc);
 
     pthread_mutex_lock(&logMutex);
     strTime(&timeStr, taskNode->arrivalTime);
-    logger(logFile, TASK_1, taskId, cpuBurst);
+    logger(logFile, TASK_1, taskNode->id, taskNode->time);
     logger(logFile, ARRIVAL_TIME, timeStr);
     logger(logFile, "\n");
     pthread_mutex_unlock(&logMutex);
@@ -388,7 +390,6 @@ void logger(File* file, char* format, ...)
 #ifdef DEBUG
     fprintf(stderr, "%s", str);
 #endif
-
     addLineToFile(str, file);
 }
 
