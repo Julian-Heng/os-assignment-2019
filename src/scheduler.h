@@ -41,7 +41,7 @@ void taskThreadAddTask(Queue* taskQueue, File* taskFile, File* logFile);
 
 void printCpuStat(File* logFile, int id, Task* task);
 void strTime(char** str, time_t secs);
-void logToFile(File* file, char* format, ...);
+void logger(File* file, char* format, ...);
 void usage(char* exe);
 
 #endif
