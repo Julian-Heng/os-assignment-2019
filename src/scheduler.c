@@ -17,11 +17,17 @@
 #define NUM_THREADS 3
 
 #define TIME                "%02d:%02d:%02d"
+
+#define TASK_1              "task%d: %d\n"
+#define TASK_2              "Task %d\n"
 #define TASK_NUM            "Number of tasks: %d\n"
 #define TASK_TALLY          "Number of tasks put into Ready-Queue: %d\n"
 #define TASK_TERMINATE      "Terminate at time: %s\n"
 
 #define CPU_HEAD            "Statistics for CPU-%d\n"
+#define ARRIVAL_TIME        "Arrival Time: %s\n"
+#define SERVICE_TIME        "Service Time: %s\n"
+#define COMPLETE_TIME       "Completion Time: %s\n"
 #define CPU_TERMINATE       "CPU-%d terminates after servicing %d tasks\n\n"
 
 #define RESULT_AVG_WAIT     "Average waiting time: %.2f secs\n"
@@ -267,7 +273,7 @@ void* cpu(void* args)
 
         strTime(&timeStr, task->serviceTime);
         printCpuStat(logFile, id, task);
-        logToFile(logFile, "Service Time: %s\n", timeStr);
+        logToFile(logFile, SERVICE_TIME, timeStr);
         logToFile(logFile, "\n");
         free(timeStr);
         timeStr = NULL;
@@ -283,7 +289,7 @@ void* cpu(void* args)
 
         strTime(&timeStr, task->completionTime);
         printCpuStat(logFile, id, task);
-        logToFile(logFile, "Completion Time: %s\n", timeStr);
+        logToFile(logFile, COMPLETE_TIME, timeStr);
         logToFile(logFile, "\n");
         free(timeStr);
         timeStr = NULL;
@@ -321,8 +327,9 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList, File* logFile)
 
     pthread_mutex_lock(&logMutex);
     strTime(&timeStr, taskNode->arrivalTime);
-    logToFile(logFile, "task%d: %d\n", taskId, cpuBurst);
-    logToFile(logFile, "Arrival time: %s\n\n", timeStr);
+    logToFile(logFile, TASK_1, taskId, cpuBurst);
+    logToFile(logFile, ARRIVAL_TIME, timeStr);
+    logToFile(logFile, "\n");
     pthread_mutex_unlock(&logMutex);
 
     free(timeStr);
@@ -340,8 +347,8 @@ void printCpuStat(File* logFile, int id, Task* task)
 
     strTime(&timeStr, task->arrivalTime);
     logToFile(logFile, CPU_HEAD, id);
-    logToFile(logFile, "Task %d\n", task->id);
-    logToFile(logFile, "Arrival Time: %s\n", timeStr);
+    logToFile(logFile, TASK_2, task->id);
+    logToFile(logFile, ARRIVAL_TIME, timeStr);
 
     free(timeStr);
     timeStr = NULL;
