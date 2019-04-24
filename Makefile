@@ -34,7 +34,7 @@ queue: linkedList
 file: $(OBJ)
 	$(CC) $(CFLAGS) -o $(OBJ)/file.o -c $(SRC)/file.c
 
-test: runtest_linkedList runtest_queue test_file
+test: runtest_linkedList runtest_queue test_file runtest_scheduler
 
 runtest_linkedList: test_linkedList
 	$(BUILD)/test_linkedList
@@ -43,6 +43,14 @@ runtest_linkedList: test_linkedList
 runtest_queue: test_queue
 	$(BUILD)/test_queue
 	valgrind $(BUILD)/test_queue
+
+runtest_scheduler: scheduler_debug
+	for i in 2 3 4 5 6 7 8 9 10; do \
+		for tool in helgrind drd; do \
+			valgrind --tool="$$tool" \
+				./build/scheduler ./resources/small_tasks "$$i"; \
+		done; \
+	done
 
 test_linkedList: linkedList
 	$(CC) $(CFLAGS) -o $(OBJ)/test_linkedList.o -c $(TEST)/test_linkedList.c
@@ -58,12 +66,18 @@ test_queue: queue
 			-o $(BUILD)/test_queue
 
 test_file: file queue
-	$(CC) $(CFLAGS) -o $(OBJ)/test_file.o -c $(TEST)/test_file.c
+	$(CC) $(CFLAGS) -o $(OBJ)/test_file_read.o -c $(TEST)/test_file_read.c
+	$(CC) $(CFLAGS) -o $(OBJ)/test_file_write.o -c $(TEST)/test_file_write.c
 	$(CC)	$(OBJ)/file.o \
 			$(OBJ)/linkedList.o \
 			$(OBJ)/queue.o \
-			$(OBJ)/test_file.o \
-			-o $(BUILD)/test_file
+			$(OBJ)/test_file_read.o \
+			-o $(BUILD)/test_file_read
+	$(CC)	$(OBJ)/file.o \
+			$(OBJ)/linkedList.o \
+			$(OBJ)/queue.o \
+			$(OBJ)/test_file_write.o \
+			-o $(BUILD)/test_file_write
 
 docs: $(REPORT)
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex

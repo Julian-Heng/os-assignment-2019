@@ -18,7 +18,7 @@ typedef struct SharedData
 {
     Queue* readyQueue;
     File* taskFile;
-    FILE* logFile;
+    File* logFile;
 } SharedData;
 
 typedef struct CpuData
@@ -37,10 +37,11 @@ int run(char* filename, int max);
 void* task(void* args);
 void* process(void* args);
 
-void taskThreadAddTask(Queue* taskQueue, File* taskFile, FILE* logFile);
+void taskThreadAddTask(Queue* taskQueue, File* taskFile, File* logFile);
 
-void printCpuStat(FILE* f, int id, Task* task);
-void printTime(FILE* f, time_t secs);
+void printCpuStat(File* logFile, int id, Task* task);
+void strTime(char** str, time_t secs);
+void logToFile(File* file, char* format, ...);
 void usage(char* exe);
 
 #endif

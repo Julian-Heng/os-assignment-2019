@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <pthread.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,10 +19,10 @@
 #define TIME                "%02d:%02d:%02d"
 #define TASK_NUM            "Number of tasks: %d\n"
 #define TASK_TALLY          "Number of tasks put into Ready-Queue: %d\n"
-#define TASK_TERMINATE      "Terminate at time: "
+#define TASK_TERMINATE      "Terminate at time: %s\n"
 
 #define CPU_HEAD            "Statistics for CPU-%d\n"
-#define CPU_TERMINATE       "CPU-%d terminates after servicing %d tasks\n"
+#define CPU_TERMINATE       "CPU-%d terminates after servicing %d tasks\n\n"
 
 #define RESULT_AVG_WAIT     "Average waiting time: %.2f secs\n"
 #define RESULT_AVG_TURN     "Average turnaround time: %.2f secs\n"
@@ -71,6 +72,7 @@ int run(char* filename, int max)
 
     Queue* readyQueue;
     File* taskFile;
+    File* logFile;
 
     int i;
     int ret;
@@ -83,18 +85,20 @@ int run(char* filename, int max)
     totalWaitingTime = 0;
     totalTurnaroundTime = 0;
 
-    taskFile = (File*)malloc(sizeof(File));
     readyQueue = initQueue(max);
-    readFile(filename, taskFile);
+
+    taskFile = initFile(INT_MAX);
+    setFilename(filename, taskFile);
+    readFile(taskFile);
+
+    logFile = initFile(INT_MAX);
+    setFilename(LOG_FILE, logFile);
 
     sharedData.readyQueue = readyQueue;
     sharedData.taskFile = taskFile;
-#ifdef DEBUG
-    sharedData.logFile = stderr;
-#else
-    sharedData.logFile = fopen(LOG_FILE, "a");
-#endif
-    fprintf(sharedData.logFile, "---\n");
+    sharedData.logFile = logFile;
+
+    logToFile(sharedData.logFile, "---\n");
 
     for (i = 0; i < NUM_THREADS; i++)
     {
@@ -124,20 +128,17 @@ int run(char* filename, int max)
         totalTurnaroundTime += cpuData[i].totalTurnaroundTime;
     }
 
-    fprintf(sharedData.logFile, TASK_NUM, totalTasks);
-    fprintf(sharedData.logFile, RESULT_AVG_WAIT,
-                                INT_REAL_DIV(totalWaitingTime,
-                                             totalTasks));
-    fprintf(sharedData.logFile, RESULT_AVG_TURN,
-                                INT_REAL_DIV(totalTurnaroundTime,
-                                             totalTasks));
+    logToFile(logFile, TASK_NUM, totalTasks);
+    logToFile(logFile, RESULT_AVG_WAIT, INT_REAL_DIV(totalWaitingTime,
+                                                     totalTasks));
+    logToFile(logFile, RESULT_AVG_TURN, INT_REAL_DIV(totalTurnaroundTime,
+                                                     totalTasks));
 
     clearQueue(&readyQueue);
-    clearQueue(&(taskFile->data));
 
-    free(taskFile);
-    taskFile = NULL;
-    fclose(sharedData.logFile);
+    writeFile(sharedData.logFile, "a");
+    freeFile(&(sharedData.logFile));
+    freeFile(&(sharedData.taskFile));
 
     ret = 0;
     return ret;
@@ -148,10 +149,13 @@ void* task(void* args)
     SharedData* sharedData = (SharedData*)args;
     Queue* readyQueue = sharedData->readyQueue;
     File* taskFile = sharedData->taskFile;
-    FILE* logFile = sharedData->logFile;
+    File* logFile = sharedData->logFile;
 
-    int numTasks = 0;
+    char* timeStr;
+    int numTasks;
     time_t rawSecs;
+
+    numTasks = 0;
 
     while (TRUE)
     {
@@ -163,10 +167,14 @@ void* task(void* args)
             time(&rawSecs);
 
             pthread_mutex_lock(&logMutex);
-            fprintf(logFile, TASK_TALLY, numTasks);
-            fprintf(logFile, TASK_TERMINATE);
-            printTime(logFile, rawSecs);
-            fprintf(logFile, "\n\n");
+
+            strTime(&timeStr, rawSecs);
+            logToFile(logFile, TASK_TALLY, numTasks);
+            logToFile(logFile, TASK_TERMINATE, timeStr);
+            logToFile(logFile, "\n");
+            free(timeStr);
+            timeStr = NULL;
+
             pthread_mutex_unlock(&logMutex);
 
             pthread_exit(NULL);
@@ -175,7 +183,7 @@ void* task(void* args)
         if (getQueueRemainingCapacity(readyQueue) < 2)
         {
             /* readyQueue is full */
-            pthread_cond_signal(&queueFull);
+            pthread_cond_broadcast(&queueFull);
 
             while (getQueueRemainingCapacity(readyQueue) < 2)
             {
@@ -189,12 +197,14 @@ void* task(void* args)
             if (! isQueueEmpty(taskFile->data))
             {
                 taskThreadAddTask(readyQueue, taskFile, logFile);
+                pthread_cond_signal(&queueFull);
                 numTasks++;
             }
 
             if (! isQueueEmpty(taskFile->data))
             {
                 taskThreadAddTask(readyQueue, taskFile, logFile);
+                pthread_cond_signal(&queueFull);
                 numTasks++;
             }
         }
@@ -212,11 +222,13 @@ void* process(void* args)
 
     Queue* readyQueue = sharedData->readyQueue;
     File* taskFile = sharedData->taskFile;
-    FILE* logFile = sharedData->logFile;
+    File* logFile = sharedData->logFile;
 
     QueueNode* node;
     Task* task;
     int isMalloc;
+
+    char* timeStr;
 
     while (TRUE)
     {
@@ -226,7 +238,7 @@ void* process(void* args)
         {
             pthread_mutex_unlock(&queueMutex);
             pthread_mutex_lock(&logMutex);
-            fprintf(logFile, CPU_TERMINATE, id, cpuData->numTasks);
+            logToFile(logFile, CPU_TERMINATE, id, cpuData->numTasks);
             pthread_mutex_unlock(&logMutex);
 
             pthread_exit(NULL);
@@ -253,10 +265,14 @@ void* process(void* args)
                                        (task->arrivalTime);
 
         pthread_mutex_lock(&logMutex);
+
+        strTime(&timeStr, task->serviceTime);
         printCpuStat(logFile, id, task);
-        fprintf(logFile, "Service Time: ");
-        printTime(logFile, task->serviceTime);
-        fprintf(logFile, "\n\n");
+        logToFile(logFile, "Service Time: %s\n", timeStr);
+        logToFile(logFile, "\n");
+        free(timeStr);
+        timeStr = NULL;
+
         pthread_mutex_unlock(&logMutex);
 
         sleep(task->time);
@@ -265,10 +281,14 @@ void* process(void* args)
                                           (task->arrivalTime);
 
         pthread_mutex_lock(&logMutex);
+
+        strTime(&timeStr, task->completionTime);
         printCpuStat(logFile, id, task);
-        fprintf(logFile, "Completion Time: ");
-        printTime(logFile, task->completionTime);
-        fprintf(logFile, "\n\n");
+        logToFile(logFile, "Completion Time: %s\n", timeStr);
+        logToFile(logFile, "\n");
+        free(timeStr);
+        timeStr = NULL;
+
         pthread_mutex_unlock(&logMutex);
 
         free(task);
@@ -279,11 +299,12 @@ void* process(void* args)
     }
 }
 
-void taskThreadAddTask(Queue* taskQueue, File* taskList, FILE* logFile)
+void taskThreadAddTask(Queue* taskQueue, File* taskList, File* logFile)
 {
     Task* taskNode;
     QueueNode* node;
 
+    char* timeStr;
     char* str;
     int taskId;
     int cpuBurst;
@@ -292,7 +313,7 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList, FILE* logFile)
     taskNode = (Task*)malloc(sizeof(Task));
     node = dequeue(taskList->data, (void**)&str, &isMalloc);
 
-    sscanf(str, "task%d %d", &taskId, &cpuBurst);
+    sscanf(str, "task%d %d\n", &taskId, &cpuBurst);
     taskNode->id = taskId;
     taskNode->time = cpuBurst;
     taskNode->cpu = INT_MAX;
@@ -300,34 +321,61 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList, FILE* logFile)
     enqueue(taskQueue, taskNode, isMalloc);
 
     pthread_mutex_lock(&logMutex);
-    fprintf(logFile, "task%d: %d\n", taskId, cpuBurst);
-    fprintf(logFile, "Arrival time: ");
-    printTime(logFile, taskNode->arrivalTime);
-    fprintf(logFile, "\n\n");
+    strTime(&timeStr, taskNode->arrivalTime);
+    logToFile(logFile, "task%d: %d\n", taskId, cpuBurst);
+    logToFile(logFile, "Arrival time: %s\n\n", timeStr);
     pthread_mutex_unlock(&logMutex);
 
+    free(timeStr);
     free(str);
     free(node);
 
+    timeStr = NULL;
     str = NULL;
     node = NULL;
 }
 
-void printCpuStat(FILE* f, int id, Task* task)
+void printCpuStat(File* logFile, int id, Task* task)
 {
-    fprintf(f, CPU_HEAD, id);
-    fprintf(f, "Task %d\n", task->id);
-    fprintf(f, "Arrival Time: ");
-    printTime(f, task->arrivalTime);
-    fprintf(f, "\n");
+    char* timeStr;
+
+    strTime(&timeStr, task->arrivalTime);
+    logToFile(logFile, CPU_HEAD, id);
+    logToFile(logFile, "Task %d\n", task->id);
+    logToFile(logFile, "Arrival Time: %s\n", timeStr);
+
+    free(timeStr);
+    timeStr = NULL;
 }
 
-void printTime(FILE* f, time_t secs)
+void strTime(char** str, time_t secs)
 {
-    struct tm* timeinfo = localtime(&secs);
-    fprintf(f, TIME, timeinfo->tm_hour,
-                     timeinfo->tm_min,
-                     timeinfo->tm_sec);
+    struct tm* time = localtime(&secs);
+
+    *str = (char*)malloc(sizeof(char) * 9);
+    memset(*str, '\0', 9);
+    sprintf(*str, TIME, time->tm_hour,
+                        time->tm_min,
+                        time->tm_sec);
+}
+
+void logToFile(File* file, char* format, ...)
+{
+    char* str;
+
+    va_list(args);
+    va_start(args, format);
+
+    str = (char*)malloc(sizeof(char) * BUFSIZ);
+    memset(str, '\0', BUFSIZ);
+
+    vsprintf(str, format, args);
+
+#ifdef DEBUG
+    fprintf(stderr, "%s", str);
+#endif
+
+    addLineToFile(str, file);
 }
 
 void usage(char* exe)
