@@ -35,7 +35,7 @@ typedef struct CpuData
 
 int run(char* filename, int max);
 void* task(void* args);
-void* process(void* args);
+void* cpu(void* args);
 
 void taskThreadAddTask(Queue* taskQueue, File* taskFile, File* logFile);
 

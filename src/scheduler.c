@@ -112,7 +112,7 @@ int run(char* filename, int max)
     pthread_create(&taskThread, NULL, task, &sharedData);
     for (i = 0; i < NUM_THREADS; i++)
     {
-        pthread_create(&cpuThread[i], NULL, process, &cpuData[i]);
+        pthread_create(&cpuThread[i], NULL, cpu, &cpuData[i]);
     }
 
     pthread_join(taskThread, NULL);
@@ -214,7 +214,7 @@ void* task(void* args)
     }
 }
 
-void* process(void* args)
+void* cpu(void* args)
 {
     CpuData* cpuData = (CpuData*)args;
     SharedData* sharedData = cpuData->data;
@@ -227,7 +227,6 @@ void* process(void* args)
     QueueNode* node;
     Task* task;
     int isMalloc;
-
     char* timeStr;
 
     while (TRUE)
