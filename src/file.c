@@ -14,6 +14,11 @@
 #define FALSE 0
 #define TRUE !FALSE
 
+/**
+ * Allocates memory for a file struct
+ * Initialise all variables to default
+ * Takes in an int for the maximum row size of the file
+ **/
 File* initFile(int size)
 {
     File* file;
@@ -30,7 +35,7 @@ File* initFile(int size)
 
 /**
  * Reads a file to a queue
- * Takes a filename parameter and a File struct
+ * Takes in a File struct
  **/
 void readFile(File* file)
 {
@@ -60,8 +65,10 @@ void readFile(File* file)
             }
         }
 
+        /* Set file pointer to the start of the file */
         fseek(f, 0, SEEK_SET);
 
+        /* Plus two for newline and string terminator */
         str = (char*)malloc((cols + 2) * sizeof(char));
 
         /* Save line from file to str, then trim newline and enqueue */
@@ -80,6 +87,10 @@ void readFile(File* file)
     }
 }
 
+/**
+ * Flush the contents of the file queue to a file
+ * Takes in a string for the mode for fopen and a File struct
+ **/
 void writeFile(File* file, char* mode)
 {
     FILE* f;
@@ -94,13 +105,20 @@ void writeFile(File* file, char* mode)
     f = fopen(file->filename, mode);
     str = NULL;
 
+    /* Check for file errors and if the File struct is not null */
     if (! ferror(f) && file)
     {
+        /**
+         * Create a duplicate File queue because dequeue removes them
+         * from the original File queue
+         **/
         length = file->rows;
         clone = initQueue(length);
 
+        /* Loop until File queue is empty */
         while (! isQueueEmpty(file->data))
         {
+            /* Dequeue and enqueue the file contents */
             node = dequeue(file->data, (void*)&str, &isMalloc);
             fprintf(f, "%s", str);
             enqueue(clone, str, isMalloc);
@@ -109,34 +127,52 @@ void writeFile(File* file, char* mode)
             node = NULL;
         }
 
+        /* Clean the original queue and reassign to the File struct */
         clearQueue(&(file->data));
         file->data = clone;
         fclose(f);
     }
 }
 
+/**
+ * Set the filename in a File struct
+ * Takes in the filename and a File struct
+ **/
 void setFilename(char* filename, File* file)
 {
     int len;
 
+    /* If file is not null */
     if (file)
     {
+        /* All filename in a File struct is the heap */
         len = strlen(filename) + 1;
         file->filename = malloc(sizeof(char) * len);
         strncpy(file->filename, filename, len);
     }
 }
 
+/**
+ * Enqueue a line to a file
+ * The line needs to be constructed in the calling function
+ **/
 void addLineToFile(char* line, File* file)
 {
-    int len;
+    int len = strlen(line);
 
-    len = strlen(line);
+    /**
+     * Check if the input line is longer than the current
+     * longest line in the file
+     **/
     file->cols = len > file->cols ? len : file->cols;
     enqueue(file->data, line, TRUE);
     (file->rows)++;
 }
 
+/**
+ * Cleanup a File struct
+ * Frees the queue and the filename variable
+ **/
 void freeFile(File** file)
 {
     if ((*file)->filename)

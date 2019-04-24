@@ -1,3 +1,9 @@
+/**
+ * Filename: scheduler.c
+ * Author:   Julian Heng (19473701)
+ * Purpose:  The scheduler program that uses a first come first serve algorithm
+ **/
+
 #include <limits.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -24,26 +30,35 @@
 #define TIME                "%02d:%02d:%02d"
 #define TIME_LENGTH         9
 
+/* String literals */
 #define SEPARATOR           "-----\n"
 
-#define TASK_SCAN           "task%d %d\n"
-#define TASK_1              "task%d: %d\n"
-#define TASK_2              "Task %d\n"
-#define TASK_NUM            "Number of tasks: %d\n"
-#define TASK_TALLY          "Number of tasks put into Ready-Queue: %d\n"
-#define TASK_TERMINATE      "Terminate at time: %s\n"
+#define TASK_SCAN       "task%d %d\n"
+#define TASK_1          "task%d: %d\n"
+#define TASK_2          "Task %d\n"
+#define TASK_NUM        "Number of tasks: %d\n"
+#define TASK_TALLY      "Number of tasks put into Ready-Queue: %d\n"
+#define TASK_TERMINATE  "Terminate at time: %s\n"
 
-#define CPU_HEAD            "Statistics for CPU-%d\n"
-#define ARRIVAL_TIME        "Arrival Time: %s\n"
-#define SERVICE_TIME        "Service Time: %s\n"
-#define COMPLETE_TIME       "Completion Time: %s\n"
-#define CPU_TERMINATE       "CPU-%d terminates after servicing %d tasks\n\n"
+#define CPU_HEAD        "Statistics for CPU-%d\n"
+#define ARRIVAL_TIME    "Arrival Time: %s\n"
+#define SERVICE_TIME    "Service Time: %s\n"
+#define COMPLETE_TIME   "Completion Time: %s\n"
+#define CPU_TERMINATE   "CPU-%d terminates after servicing %d tasks\n\n"
 
-#define RESULT_AVG_WAIT     "Average waiting time: %.3f secs\n"
-#define RESULT_AVG_TURN     "Average turnaround time: %.3f secs\n"
+#define RESULT_AVG_WAIT "Average waiting time: %.3f secs\n"
+#define RESULT_AVG_TURN "Average turnaround time: %.3f secs\n"
 
-#define LOG_FILE            "simulation_log"
+#define LOG_FILE        "simulation_log"
 
+/**
+ * queueMutex   Mutex lock for locking the readyQueue
+ * logMutex     Mutex lock for locking the log file
+ * statMutex    Mutex lock for updating the stats
+ *
+ * queueFull    Condition sent by task() to notify that the ready queue is full
+ * queueEmpty   Condition sent by cpu() to notify that the ready queue is empty
+ **/
 pthread_mutex_t queueMutex  = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t logMutex    = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t statMutex   = PTHREAD_MUTEX_INITIALIZER;
@@ -79,8 +94,17 @@ int main(int argc, char** argv)
     return ret;
 }
 
+/**
+ * The main algorithm in the scheduler program
+ **/
 int run(char* filename, int max)
 {
+    /**
+     * Task will be assiged with a SharedData struct
+     * Each cpu thread is assigned a CpuData struct, which all point to the
+     * same SharedData struct in Task. Each CpuData has an int, which refers to
+     * the CPU id
+     **/
     pthread_t taskThread;
     pthread_t cpuThread[3];
     SharedData sharedData;
@@ -109,6 +133,7 @@ int run(char* filename, int max)
     logFile = initFile(INT_MAX);
     setFilename(LOG_FILE, logFile);
 
+    /* Linking the shared data to the variables in this function stack */
     sharedData.readyQueue = readyQueue;
     sharedData.taskFile = taskFile;
     sharedData.logFile = logFile;
@@ -117,48 +142,63 @@ int run(char* filename, int max)
     sharedData.totalWaitingTime = &totalWaitingTime;
     sharedData.totalTurnaroundTime = &totalTurnaroundTime;
 
+    /* Start of the log file */
     logger(sharedData.logFile, SEPARATOR);
 
+    /* Set up cpuData */
     for (i = 0; i < NUM_THREADS; i++)
     {
         cpuData[i].data = &sharedData;
         cpuData[i].id = i + 1;
     }
 
+    /* Create threads */
     pthread_create(&taskThread, NULL, task, &sharedData);
     for (i = 0; i < NUM_THREADS; i++)
     {
         pthread_create(&cpuThread[i], NULL, cpu, &cpuData[i]);
     }
 
+    /* Waiting for threads */
     pthread_join(taskThread, NULL);
     for (i = 0; i < NUM_THREADS; i++)
     {
         pthread_join(cpuThread[i], NULL);
     }
 
+    /* Log result */
     logger(logFile, TASK_NUM, numTasks);
     logger(logFile, RESULT_AVG_WAIT, INT_REAL_DIV(totalWaitingTime,
                                                   numTasks));
     logger(logFile, RESULT_AVG_TURN, INT_REAL_DIV(totalTurnaroundTime,
                                                   numTasks));
 
-    clearQueue(&readyQueue);
-
+    /* Write log file */
     writeFile(logFile, "a");
-    freeFile(&logFile);
+
+    /* Cleanup */
+    clearQueue(&readyQueue);
     freeFile(&taskFile);
+    freeFile(&logFile);
 
     return SUCCESS;
 }
 
+/**
+ * The runnable task thread
+ **/
 void* task(void* args)
 {
+    /**
+     * Typecasting args to the individual variables
+     * All of these variables are shared
+     **/
     SharedData* sharedData = (SharedData*)args;
     Queue* readyQueue = sharedData->readyQueue;
     File* taskFile = sharedData->taskFile;
     File* logFile = sharedData->logFile;
 
+    /* These variables are local to task */
     char* timeStr;
     int numTasks;
     time_t rawSecs;
@@ -167,48 +207,63 @@ void* task(void* args)
 
     while (TRUE)
     {
+        /* Acquire lock */
         pthread_mutex_lock(&queueMutex);
 
+        /* Check for exit condition */
         if (isQueueEmpty(taskFile->data))
         {
+            /* Release lock*/
             pthread_mutex_unlock(&queueMutex);
             time(&rawSecs);
 
+            /* Log task exiting */
             pthread_mutex_lock(&logMutex);
-
             strTime(&timeStr, rawSecs);
             logger(logFile, TASK_TALLY, numTasks);
             logger(logFile, TASK_TERMINATE, timeStr);
             logger(logFile, "\n");
             free(timeStr);
             timeStr = NULL;
-
             pthread_mutex_unlock(&logMutex);
 
             pthread_exit(NULL);
         }
 
+        /* Check if readyQueue has less than 2 free slots */
         if (getQueueRemainingCapacity(readyQueue) < 2)
         {
             /* readyQueue is full */
             pthread_cond_broadcast(&queueFull);
 
+            /**
+             * Wait for the queue to be empty/not full
+             * The task threads is blocked until the readyQueue is not full
+             **/
             while (getQueueRemainingCapacity(readyQueue) < 2)
             {
                 pthread_cond_wait(&queueEmpty, &queueMutex);
             }
         }
 
+        /**
+         * Keep looping until queue is full and there's still task in the file.
+         * Cpu thread can start working on the task as soon as they're added
+         **/
         while (getQueueRemainingCapacity(readyQueue) > 1 &&
                ! isQueueEmpty(taskFile->data))
         {
             if (! isQueueEmpty(taskFile->data))
             {
+                /* Add task */
                 taskThreadAddTask(readyQueue, taskFile, logFile);
+
+                /* Wake cpu thread */
                 pthread_cond_broadcast(&queueFull);
                 numTasks++;
             }
 
+            /* Run again to add twice */
             if (! isQueueEmpty(taskFile->data))
             {
                 taskThreadAddTask(readyQueue, taskFile, logFile);
@@ -217,13 +272,21 @@ void* task(void* args)
             }
         }
 
+        /* Signal that the queue is full and release lock */
         pthread_cond_signal(&queueFull);
         pthread_mutex_unlock(&queueMutex);
     }
 }
 
+/**
+ * The runnable cpu thread
+ **/
 void* cpu(void* args)
 {
+    /**
+     * Typecasting args to the individual variables
+     * All of these variables are shared
+     **/
     CpuData* cpuData = (CpuData*)args;
     SharedData* sharedData = cpuData->data;
     int id = cpuData->id;
@@ -232,6 +295,7 @@ void* cpu(void* args)
     File* taskFile = sharedData->taskFile;
     File* logFile = sharedData->logFile;
 
+    /* These variables are local to each cpu thread */
     QueueNode* node;
     Task* task;
     int isMalloc;
@@ -243,11 +307,16 @@ void* cpu(void* args)
 
     while (TRUE)
     {
+        /* Acquire queue lock */
         pthread_mutex_lock(&queueMutex);
 
+        /* Check for exit condition */
         if (isQueueEmpty(taskFile->data) && isQueueEmpty(readyQueue))
         {
+            /* Release lock*/
             pthread_mutex_unlock(&queueMutex);
+
+            /* Log task exiting */
             pthread_mutex_lock(&logMutex);
             logger(logFile, CPU_TERMINATE, id, numTasks);
             pthread_mutex_unlock(&logMutex);
@@ -260,18 +329,29 @@ void* cpu(void* args)
             /* readyQueue is empty */
             pthread_cond_signal(&queueEmpty);
 
+            /**
+             * Wait for the queue to be full/not empty
+             * The cpu thread is blocked until the readyQueue is not empty
+             **/
             while (isQueueEmpty(readyQueue))
             {
                 pthread_cond_wait(&queueFull, &queueMutex);
             }
         }
 
+        /* Remove node from readyQueue */
         node = dequeue(readyQueue, (void**)&task, &isMalloc);
 
+        /* Signal to task to start filling the readyQueue */
+        pthread_cond_signal(&queueEmpty);
 
+        /* Release queue lock */
         pthread_mutex_unlock(&queueMutex);
 
+        /* Start "processing" task */
         time(&(task->serviceTime));
+
+        /* Update scheduler stats */
         pthread_mutex_lock(&statMutex);
         numTasks++;
         (*(sharedData->numTasks))++;
@@ -279,46 +359,57 @@ void* cpu(void* args)
                                              (task->arrivalTime);
         pthread_mutex_unlock(&statMutex);
 
-
+        /* Log service time */
         pthread_mutex_lock(&logMutex);
         strTime(&timeStr, task->serviceTime);
-        printCpuStat(logFile, id, task);
+        logCpuStat(logFile, id, task);
         logger(logFile, SERVICE_TIME, timeStr);
         logger(logFile, "\n");
         free(timeStr);
         timeStr = NULL;
         pthread_mutex_unlock(&logMutex);
 
-
+        /* "Process" the task */
         sleep(task->time);
         time(&(task->completionTime));
-
 
         pthread_mutex_lock(&statMutex);
         (*(sharedData->totalTurnaroundTime)) += (task->completionTime) -
                                                 (task->arrivalTime);
         pthread_mutex_unlock(&statMutex);
 
-
+        /* Log completion time */
         pthread_mutex_lock(&logMutex);
         strTime(&timeStr, task->completionTime);
-        printCpuStat(logFile, id, task);
+        logCpuStat(logFile, id, task);
         logger(logFile, COMPLETE_TIME, timeStr);
         logger(logFile, "\n");
-        free(timeStr);
-        timeStr = NULL;
         pthread_mutex_unlock(&logMutex);
 
-
+        /* Cleanup */
+        free(timeStr);
         free(task);
-        task = NULL;
-
         free(node);
+
+        timeStr = NULL;
+        task = NULL;
         node = NULL;
+
+        /**
+         * Restart back at the top, if it detects that the queue is empty, send
+         * a queue empty signal and start again when there is an item the ready
+         * queue
+         **/
     }
 }
 
-void taskThreadAddTask(Queue* taskQueue, File* taskList, File* logFile)
+/**
+ * Function used by task thread to add a task from the task list to the ready
+ * queue, logging the process
+ *
+ * This function is assumed to have the queueMutex lock
+ **/
+void taskThreadAddTask(Queue* readyQueue, File* taskFile, File* logFile)
 {
     Task* taskNode;
     QueueNode* node;
@@ -327,14 +418,21 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList, File* logFile)
     char* str;
     int isMalloc;
 
+    /* Allocate memory for a Task struct */
     taskNode = (Task*)malloc(sizeof(Task));
-    node = dequeue(taskList->data, (void**)&str, &isMalloc);
 
+    /* Get a line from the task file */
+    node = dequeue(taskFile->data, (void**)&str, &isMalloc);
+
+    /* Parse string */
     sscanf(str, TASK_SCAN, &(taskNode->id), &(taskNode->time));
     taskNode->cpu = INT_MAX;
     time(&(taskNode->arrivalTime));
-    enqueue(taskQueue, taskNode, isMalloc);
 
+    /* Add to the readyQueue */
+    enqueue(readyQueue, taskNode, isMalloc);
+
+    /* Log arrival time */
     pthread_mutex_lock(&logMutex);
     strTime(&timeStr, taskNode->arrivalTime);
     logger(logFile, TASK_1, taskNode->id, taskNode->time);
@@ -342,6 +440,7 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList, File* logFile)
     logger(logFile, "\n");
     pthread_mutex_unlock(&logMutex);
 
+    /* Cleanup */
     free(timeStr);
     free(str);
     free(node);
@@ -351,7 +450,11 @@ void taskThreadAddTask(Queue* taskQueue, File* taskList, File* logFile)
     node = NULL;
 }
 
-void printCpuStat(File* logFile, int id, Task* task)
+/**
+ * Function to log common information to the log file
+ * Logs task number and arrival time
+ **/
+void logCpuStat(File* logFile, int id, Task* task)
 {
     char* timeStr;
 
@@ -364,6 +467,9 @@ void printCpuStat(File* logFile, int id, Task* task)
     timeStr = NULL;
 }
 
+/**
+ * Fills a string with the current time
+ **/
 void strTime(char** str, time_t secs)
 {
     struct tm* time = localtime(&secs);
@@ -375,6 +481,10 @@ void strTime(char** str, time_t secs)
                         time->tm_sec);
 }
 
+/**
+ * Adds a line to the log file
+ * Takes in the same arguments in the style of a printf function
+ **/
 void logger(File* file, char* format, ...)
 {
     char* str;
@@ -387,12 +497,16 @@ void logger(File* file, char* format, ...)
 
     vsprintf(str, format, args);
 
+    /* Print to stderr if DEBUG flag is set */
 #ifdef DEBUG
     fprintf(stderr, "%s", str);
 #endif
     addLineToFile(str, file);
 }
 
+/**
+ * Print usage message
+ **/
 void usage(char* exe)
 {
     fprintf(stderr, "Usage: %s [task-file] [2-10]\n", exe);

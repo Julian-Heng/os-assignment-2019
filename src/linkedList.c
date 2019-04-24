@@ -138,6 +138,7 @@ LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
     {
         peek(node, voidPtr, isMalloc);
 
+        /* Special case for single node list */
         if (list->length == 1)
         {
             list->head = NULL;
@@ -211,8 +212,12 @@ void peekLast(LinkedList* list, void** voidPtr, int* isMalloc)
     peek(list->tail, voidPtr, isMalloc);
 }
 
+/**
+ * Sets the value of the selected node to the void pointer
+ **/
 static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc)
 {
+    /* Set to voidPtr to null if node is null */
     if (node)
     {
         *voidPtr = node->value;
@@ -225,6 +230,9 @@ static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc)
     }
 }
 
+/**
+ * Returns list length
+ **/
 int getListLength(LinkedList* list)
 {
     return list->length;
@@ -247,6 +255,9 @@ void clearList(LinkedList** list)
     }
 }
 
+/**
+ * Recursively removes the node in the list
+ **/
 static void clearListRecurse(LinkedListNode** node)
 {
     if (*node)
@@ -273,6 +284,9 @@ static void freeNode(LinkedListNode** node)
     *node = NULL;
 }
 
+/**
+ * Check if the list is empty
+ **/
 int isListEmpty(LinkedList* list)
 {
     return (list &&
