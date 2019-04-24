@@ -197,14 +197,14 @@ void* task(void* args)
             if (! isQueueEmpty(taskFile->data))
             {
                 taskThreadAddTask(readyQueue, taskFile, logFile);
-                pthread_cond_signal(&queueFull);
+                pthread_cond_broadcast(&queueFull);
                 numTasks++;
             }
 
             if (! isQueueEmpty(taskFile->data))
             {
                 taskThreadAddTask(readyQueue, taskFile, logFile);
-                pthread_cond_signal(&queueFull);
+                pthread_cond_broadcast(&queueFull);
                 numTasks++;
             }
         }
