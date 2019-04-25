@@ -80,6 +80,7 @@ typedef struct CpuData
 #define INT_REAL_DIV(a, b) \
     ((double)(a) / (double)(b))
 
+/* Function prototypes */
 int run(char* filename, int max);
 void* task(void* args);
 void* cpu(void* args);
@@ -89,4 +90,4 @@ void strTime(char** str, time_t secs);
 void logger(File* file, char* format, ...);
 void usage(char* exe);
 
-#endif
+#endif /* End of scheduler.h */

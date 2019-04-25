@@ -13,8 +13,10 @@ typedef struct Queue
     int max;
 } Queue;
 
+/* A QueueNode is the same as a LinkedLIstNode */
 typedef LinkedListNode QueueNode;
 
+/* Function prototypes */
 Queue* initQueue(int max);
 int enqueue(Queue* queue, void* val, int isMalloc);
 QueueNode* dequeue(Queue* queue, void** val, int* isMalloc);
@@ -26,4 +28,4 @@ void clearQueue(Queue** queue);
 int isQueueEmpty(Queue* queue);
 int isQueueFull(Queue* queue);
 
-#endif
+#endif /* End of queue.h */
