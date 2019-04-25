@@ -45,7 +45,7 @@ runtest_queue: test_queue
 	valgrind $(BUILD)/test_queue
 
 runtest_scheduler: scheduler_debug
-	for i in 2 3 4 5 6 7 8 9 10; do \
+	for i in 1 2 3 4 5 6 7 8 9 10; do \
 		for tool in helgrind drd; do \
 			valgrind --tool="$$tool" \
 				./build/scheduler ./resources/small_tasks "$$i"; \
@@ -80,7 +80,7 @@ test_file: file queue
 			-o $(BUILD)/test_file_write
 
 docs: $(REPORT)
-	{ printf "$$ %s\\n" "ls -Rl"; ls -Rl .; } \
+	{ printf "$$ %s\\n" "ls -Rl ."; ls -Rl .; } \
 		> $(REPORT)/file_listing
 	pdflatex -output-directory $(REPORT) -shell-escape \
 			 ./docs/AssignmentDoc.tex
