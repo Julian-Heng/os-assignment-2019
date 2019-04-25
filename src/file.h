@@ -3,6 +3,9 @@
 
 #include "queue.h"
 
+/**
+ * A File struct to contain the filename, the data, rows and column count
+ **/
 typedef struct File
 {
     char* filename;

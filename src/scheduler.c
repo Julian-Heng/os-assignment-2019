@@ -27,11 +27,11 @@
 #define ERROR_ARGS 1
 #define ERROR_OUT_OF_BOUNDS 2
 
-#define TIME                "%02d:%02d:%02d"
-#define TIME_LENGTH         9
+#define TIME            "%02d:%02d:%02d"
+#define TIME_LENGTH     9
 
 /* String literals */
-#define SEPARATOR           "-----\n"
+#define SEPARATOR       "-----\n"
 
 #define TASK_SCAN       "task%d %d\n"
 #define TASK_1          "task%d: %d\n"

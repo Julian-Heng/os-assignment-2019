@@ -3,11 +3,16 @@
 
 #include "linkedList.h"
 
+/**
+ * Queue struct that contains a LinkedList and an integer for the maximum
+ * amount of nodes allowed for the queue
+ **/
 typedef struct Queue
 {
     LinkedList* link;
     int max;
 } Queue;
+
 typedef LinkedListNode QueueNode;
 
 Queue* initQueue(int max);
