@@ -82,8 +82,7 @@ test_file: file queue
 docs: $(REPORT)
 	{ printf "$$ %s\\n" "ls -Rl ."; ls -Rl .; } \
 		> $(REPORT)/file_listing
-	pdflatex -output-directory $(REPORT) -shell-escape \
-			 ./docs/AssignmentDoc.tex
+	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
 
 clean:
 	$(RM) -rv $(BUILD) $(REPORT) *_log
