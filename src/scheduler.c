@@ -66,11 +66,15 @@ pthread_mutex_t statMutex   = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t queueFull    = PTHREAD_COND_INITIALIZER;
 pthread_cond_t queueEmpty   = PTHREAD_COND_INITIALIZER;
 
+/**
+ * Main function
+ **/
 int main(int argc, char** argv)
 {
     int ret;
     int max;
 
+    /* Argument parsing and validation */
     if (argc < MIN_ARGS)
     {
         usage(argv[0]);
@@ -82,6 +86,7 @@ int main(int argc, char** argv)
 
         if (max > 0 && 11 > max)
         {
+            /* Arguments are valid, run program */
             ret = run(argv[1], max);
         }
         else
@@ -96,6 +101,9 @@ int main(int argc, char** argv)
 
 /**
  * The main algorithm in the scheduler program
+ *
+ * filename is the name for the task file
+ * max is the maximum readyQueue size
  **/
 int run(char* filename, int max)
 {
@@ -107,6 +115,7 @@ int run(char* filename, int max)
      **/
     pthread_t taskThread;
     pthread_t cpuThread[3];
+
     SharedData sharedData;
     CpuData cpuData[3];
 
