@@ -230,7 +230,7 @@ void* task(void* args)
             pthread_exit(NULL);
         }
 
-        /* Check if readyQueue has less than 2 free slots */
+        /* Different logic for a readyQueue with a max size of 1 */
         if (getQueueMaxLength(readyQueue) == 1)
         {
             if (isQueueFull(readyQueue))
@@ -256,6 +256,7 @@ void* task(void* args)
         }
         else
         {
+            /* Check if readyQueue has less than 2 free slots */
             if (getQueueRemainingCapacity(readyQueue) < 2)
             {
                 /* readyQueue is full */
