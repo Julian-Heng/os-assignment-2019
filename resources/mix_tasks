@@ -1,0 +1,24 @@
+Compile scheduler binary:
+  $ make
+
+Compile debug scheduler binary:
+  $ make debug
+
+Run tests:
+  $ make test
+
+Run scheduler:
+  $ ./build/scheduler
+  Usage: ./build/scheduler [task-file] [2-10]
+
+  $ ./build/scheduler ./resources/tasks 5
+task0 1
+task1 4
+task2 9
+task3 3
+task4 4
+task5 2
+task6 5
+task7 10
+task8 3
+task9 7
