@@ -1,7 +1,8 @@
 /**
  * Filename: scheduler.c
  * Author:   Julian Heng (19473701)
- * Purpose:  The scheduler program that uses a first come first serve algorithm
+ * Purpose:  The scheduler program that uses a first come first serve
+ *           algorithm
  **/
 
 #include <limits.h>
@@ -32,6 +33,7 @@
 
 /* String literals */
 #define SEPARATOR       "-----\n"
+#define FILE_ERROR      "Error: \"%s\" is not a valid task file\n"
 
 #define TASK_SCAN       "task%d %d\n"
 #define TASK_1          "task%d: %d\n"
@@ -56,8 +58,10 @@
  * logMutex     Mutex lock for locking the log file
  * statMutex    Mutex lock for updating the stats
  *
- * queueFull    Condition sent by task() to notify that the ready queue is full
- * queueEmpty   Condition sent by cpu() to notify that the ready queue is empty
+ * queueFull    Condition sent by task() to notify that the ready queue
+ *              is full
+ * queueEmpty   Condition sent by cpu() to notify that the ready queue
+ *              is empty
  **/
 pthread_mutex_t queueMutex  = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t logMutex    = PTHREAD_MUTEX_INITIALIZER;
@@ -108,10 +112,10 @@ int main(int argc, char** argv)
 int run(char* filename, int max)
 {
     /**
-     * Task will be assiged with a SharedData struct
-     * Each cpu thread is assigned a CpuData struct, which all point to the
-     * same SharedData struct in Task. Each CpuData has an int, which refers to
-     * the CPU id
+     * Task will be assigned with a SharedData struct
+     * Each cpu thread is assigned a CpuData struct, which all point to
+     * the same SharedData struct in Task. Each CpuData has an int,
+     * which refers to the CPU id
      **/
     pthread_t taskThread;
     pthread_t cpuThread[3];
@@ -142,7 +146,10 @@ int run(char* filename, int max)
     logFile = initFile(INT_MAX);
     setFilename(LOG_FILE, logFile);
 
-    /* Linking the shared data to the variables in this function stack */
+    /**
+     * Linking the shared data to the variables in this function
+     * stack
+     **/
     sharedData.readyQueue = readyQueue;
     sharedData.taskFile = taskFile;
     sharedData.logFile = logFile;
@@ -151,39 +158,46 @@ int run(char* filename, int max)
     sharedData.totalWaitingTime = &totalWaitingTime;
     sharedData.totalTurnaroundTime = &totalTurnaroundTime;
 
-    /* Start of the log file */
-    logger(sharedData.logFile, SEPARATOR);
-
-    /* Set up cpuData */
-    for (i = 0; i < NUM_THREADS; i++)
+    if (validateTaskFile(taskFile))
     {
-        cpuData[i].data = &sharedData;
-        cpuData[i].id = i + 1;
-    }
+        /* Start of the log file */
+        logger(sharedData.logFile, SEPARATOR);
 
-    /* Create threads */
-    pthread_create(&taskThread, NULL, task, &sharedData);
-    for (i = 0; i < NUM_THREADS; i++)
+        /* Set up cpuData */
+        for (i = 0; i < NUM_THREADS; i++)
+        {
+            cpuData[i].data = &sharedData;
+            cpuData[i].id = i + 1;
+        }
+
+        /* Create threads */
+        pthread_create(&taskThread, NULL, task, &sharedData);
+        for (i = 0; i < NUM_THREADS; i++)
+        {
+            pthread_create(&cpuThread[i], NULL, cpu, &cpuData[i]);
+        }
+
+        /* Waiting for threads */
+        pthread_join(taskThread, NULL);
+        for (i = 0; i < NUM_THREADS; i++)
+        {
+            pthread_join(cpuThread[i], NULL);
+        }
+
+        /* Log result */
+        logger(logFile, TASK_NUM, numTasks);
+        logger(logFile, RESULT_AVG_WAIT, INT_REAL_DIV(totalWaitingTime,
+                                                      numTasks));
+        logger(logFile, RESULT_AVG_TURN, INT_REAL_DIV(totalTurnaroundTime,
+                                                      numTasks));
+
+        /* Write log file */
+        writeFile(logFile, "a");
+    }
+    else
     {
-        pthread_create(&cpuThread[i], NULL, cpu, &cpuData[i]);
+        fprintf(stderr, FILE_ERROR, taskFile->filename);
     }
-
-    /* Waiting for threads */
-    pthread_join(taskThread, NULL);
-    for (i = 0; i < NUM_THREADS; i++)
-    {
-        pthread_join(cpuThread[i], NULL);
-    }
-
-    /* Log result */
-    logger(logFile, TASK_NUM, numTasks);
-    logger(logFile, RESULT_AVG_WAIT, INT_REAL_DIV(totalWaitingTime,
-                                                  numTasks));
-    logger(logFile, RESULT_AVG_TURN, INT_REAL_DIV(totalTurnaroundTime,
-                                                  numTasks));
-
-    /* Write log file */
-    writeFile(logFile, "a");
 
     /* Cleanup */
     clearQueue(&readyQueue);
@@ -252,8 +266,8 @@ void* task(void* args)
                 }
             }
 
-            while (isQueueEmpty(readyQueue) &&
-                   ! isQueueEmpty(taskFile->data))
+            if (isQueueEmpty(readyQueue) &&
+                ! isQueueEmpty(taskFile->data))
             {
                 /* Add task */
                 taskThreadAddTask(readyQueue, taskFile, logFile);
@@ -272,9 +286,8 @@ void* task(void* args)
                 pthread_cond_broadcast(&queueFull);
 
                 /**
-                 * Wait for the queue to be empty/not full
-                 * The task threads is blocked until the readyQueue is not
-                 * full
+                 * Wait for the queue to be empty/not full The task
+                 * threads is blocked until the readyQueue is not full
                  **/
                 while (getQueueRemainingCapacity(readyQueue) < 2)
                 {
@@ -282,13 +295,12 @@ void* task(void* args)
                 }
             }
 
-            /**
-             * Keep looping until queue is full and there's still task in
-             * the file. Cpu thread can start working on the task as soon
-             * as they're added
+            /* Add tasks into readyQueue if there is space to add 2
+             * Cpu thread can start working on the tasks as soon as
+             * they're added
              **/
-            while (getQueueRemainingCapacity(readyQueue) > 1 &&
-                   ! isQueueEmpty(taskFile->data))
+            if (getQueueRemainingCapacity(readyQueue) > 1 &&
+                ! isQueueEmpty(taskFile->data))
             {
                 if (! isQueueEmpty(taskFile->data))
                 {
@@ -310,8 +322,7 @@ void* task(void* args)
             }
         }
 
-        /* Signal that the queue is full and release lock */
-        pthread_cond_broadcast(&queueFull);
+        /* Release queue lock */
         pthread_mutex_unlock(&queueMutex);
     }
 }
@@ -369,7 +380,8 @@ void* cpu(void* args)
 
             /**
              * Wait for the queue to be full/not empty
-             * The cpu thread is blocked until the readyQueue is not empty
+             * The cpu thread is blocked until the readyQueue is not
+             * empty
              **/
             while (isQueueEmpty(readyQueue))
             {
@@ -434,16 +446,16 @@ void* cpu(void* args)
         node = NULL;
 
         /**
-         * Restart back at the top, if it detects that the queue is empty, send
-         * a queue empty signal and start again when there is an item the ready
-         * queue
+         * Restart back at the top, if it detects that the queue is
+         * empty, send a queue empty signal and start again when there
+         * is an item the ready queue
          **/
     }
 }
 
 /**
- * Function used by task thread to add a task from the task list to the ready
- * queue, logging the process
+ * Function used by task thread to add a task from the task list to the
+ * ready queue, logging the process
  *
  * This function is assumed to have the queueMutex lock
  **/
@@ -540,6 +552,48 @@ void logger(File* file, char* format, ...)
     fprintf(stderr, "%s", str);
 #endif
     addLineToFile(str, file);
+}
+
+/**
+ * Function to validate the task file
+ * If the task file contains a line that doesn't have the right format,
+ * it will return false
+ **/
+int validateTaskFile(File* file)
+{
+    int result = TRUE;
+    Queue* clone;
+    QueueNode* node;
+    char* str;
+    int isMalloc;
+
+    int dummyId;
+    int dummyTime;
+
+    if (file)
+    {
+        str = NULL;
+        clone = initQueue(file->rows);
+
+        /**
+         * Just like writeFile in file.c, we need to create a clone of
+         * the file
+         **/
+        while (! isQueueEmpty(file->data) && result)
+        {
+            node = dequeue(file->data, (void*)&str, &isMalloc);
+            enqueue(clone, str, isMalloc);
+            result = sscanf(str, TASK_SCAN, &dummyId, &dummyTime) == 2;
+
+            free(node);
+            node = NULL;
+        }
+
+        clearQueue(&(file->data));
+        file->data = clone;
+    }
+
+    return result;
 }
 
 /**

@@ -1,8 +1,8 @@
 /**
  * Filename: queue.c
  * Author:   Julian Heng (19473701)
- * Purpose:  A queue data structure, which serves as a wrapper for a linked
- *           list
+ * Purpose:  A queue data structure, which serves as a wrapper for a
+ *           linked list
  **/
 
 #include <stdlib.h>

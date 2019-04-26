@@ -109,9 +109,9 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
     else
     {
         /**
-         * Set the previous pointer in newNode to point to the current tail,
-         * then set the next in current tail to newNode. Then set newNode as
-         * the new tail
+         * Set the previous pointer in newNode to point to the current
+         * tail, then set the next in current tail to newNode. Then set
+         * newNode as the new tail
          **/
         SET_PREV_TO_NODE(newNode, list->tail)
         SET_NEXT_TO_NODE(list->tail, newNode)
@@ -125,9 +125,9 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
  * Remove the first node in the list
  *
  * We return a pointer to a node because we cannot free it within this
- * function. Thus the calling function will need to perform the freeing of the
- * node. If we free the node within this function, we lose access to the void
- * pointer within the node
+ * function. Thus the calling function will need to perform the freeing
+ * of the node. If we free the node within this function, we lose access
+ * to the void pointer within the node
  **/
 LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {

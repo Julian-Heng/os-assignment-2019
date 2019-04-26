@@ -28,8 +28,8 @@ typedef struct Task
 } Task;
 
 /**
- * A struct containing data to be shared within the task thread and the 3 cpu
- * threads
+ * A struct containing data to be shared within the task thread and the
+ * 3 cpu threads
  **/
 typedef struct SharedData
 {
@@ -68,8 +68,8 @@ typedef struct SharedData
 } SharedData;
 
 /**
- * A struct for cpu threads, which is essentially a wrapper for a SharedData
- * struct, but has an int for the cpu id
+ * A struct for cpu threads, which is essentially a wrapper for a
+ * SharedData struct, but has an int for the cpu id
  **/
 typedef struct CpuData
 {
@@ -88,6 +88,7 @@ void taskThreadAddTask(Queue* readyQueue, File* taskFile, File* logFile);
 void logCpuStat(File* logFile, int id, Task* task);
 void strTime(char** str, time_t secs);
 void logger(File* file, char* format, ...);
+int validateTaskFile(File* file);
 void usage(char* exe);
 
 #endif /* End of scheduler.h */
