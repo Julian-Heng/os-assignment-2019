@@ -158,7 +158,7 @@ int run(char* filename, int max)
     sharedData.totalWaitingTime = &totalWaitingTime;
     sharedData.totalTurnaroundTime = &totalTurnaroundTime;
 
-    if (validateTaskFile(taskFile))
+    if (sanitizeTaskFile(taskFile))
     {
         /* Start of the log file */
         logger(sharedData.logFile, SEPARATOR);
@@ -555,45 +555,50 @@ void logger(File* file, char* format, ...)
 }
 
 /**
- * Function to validate the task file
- * If the task file contains a line that doesn't have the right format,
+ * Function to sanitize the task file
+ * If the task file does not contain a line that has a valid format,
  * it will return false
  **/
-int validateTaskFile(File* file)
+int sanitizeTaskFile(File* file)
 {
-    int result = TRUE;
-    Queue* clone;
+    Queue* valid;
+    Queue* invalid;
+
     QueueNode* node;
     char* str;
     int isMalloc;
 
-    int dummyId;
-    int dummyTime;
+    int id;
+    int time;
 
     if (file)
     {
         str = NULL;
-        clone = initQueue(file->rows);
+        valid = initQueue(file->rows);
+        invalid = initQueue(file->rows);
 
         /**
-         * Just like writeFile in file.c, we need to create a clone of
-         * the file
+         * Uses 2 queues to direct vaid and invalid entries in the task
+         * file
          **/
-        while (! isQueueEmpty(file->data) && result)
+        while (! isQueueEmpty(file->data))
         {
             node = dequeue(file->data, (void*)&str, &isMalloc);
-            enqueue(clone, str, isMalloc);
-            result = sscanf(str, TASK_SCAN, &dummyId, &dummyTime) == 2;
+            enqueue(
+                sscanf(str, TASK_SCAN, &id, &time) == 2 ? valid : invalid,
+                str, isMalloc
+            );
 
             free(node);
             node = NULL;
         }
 
         clearQueue(&(file->data));
-        file->data = clone;
+        clearQueue(&invalid);
+        file->data = valid;
     }
 
-    return result;
+    return ! isQueueEmpty(file->data);
 }
 
 /**
