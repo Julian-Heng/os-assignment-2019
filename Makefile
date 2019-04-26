@@ -80,8 +80,48 @@ test_file: file queue
 			-o $(BUILD)/test_file_write
 
 docs: $(REPORT)
-	{ printf "$$ %s\\n" "ls -Rl ."; ls -Rl .; } \
-		> $(REPORT)/file_listing
+	$(RM) -v *_log
+
+	if [ ! -e "$(REPORT)/file_listing" ]; then \
+		{ \
+			printf "$$ %s\\n" "ls -Rl ."; \
+			ls -Rl .; \
+		} > $(REPORT)/file_listing; \
+	fi
+
+	make scheduler
+
+	if [ ! -e "$(REPORT)/demo" ]; then \
+		{ \
+			printf "$$ %s\\n" \
+				   "./build/scheduler"; \
+			./build/scheduler 2>&1; \
+			if command -v time > /dev/null 2>&1; then \
+				printf "\\n$$ %s\\n" \
+					   "time ./build/scheduler ./resources/small_tasks 5"; \
+				time ./build/scheduler ./resources/small_tasks 5 2>&1; \
+			else \
+				printf "\\n$$ %s\\n" \
+					   "./build/scheduler ./resources/small_tasks 5"; \
+				./build/scheduler ./resources/small_tasks 5; \
+			fi; \
+			printf "\\n$$ %s\\n" "cat ./simulation_log"; \
+			cat ./simulation_log; \
+			if command -v valgrind > /dev/null 2>&1; then \
+				for i in "" "helgrind" "drd"; do \
+					printf "\\n$$ %s %s %s %s\\n" \
+						   "valgrind" \
+						   "$${i:+--tool=$$i}" \
+						   "./build/scheduler" \
+						   "./resources/small_tasks 5"; \
+					valgrind $${i:+--tool=$$i} \
+							 ./build/scheduler \
+							 ./resources/small_tasks 5 2>&1; \
+				done; \
+			fi; \
+		} > $(REPORT)/demo; \
+	fi
+
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
 
 clean:

@@ -8,16 +8,18 @@
     bmargin=20mm
 ]{geometry}
 
-\usepackage{color}
 \usepackage[ddmmyyyy]{datetime}
+\usepackage{color}
 \usepackage{enumitem}
 \usepackage{fancyhdr}
-\usepackage{inconsolata}
 \usepackage{listings}
 \usepackage{listing}
+\usepackage{multicol}
 \usepackage{nameref}
 \usepackage{parskip}
 \usepackage{tocloft}
+
+\IfFileExists{inconsolata.sty}{\usepackage{inconsolata}}
 
 \newcommand{\code}[1]{\small\texttt{#1}\normalsize}
 
@@ -69,36 +71,131 @@
 \fancyhf[FL]{\footnotesize{Julian Heng (19473701)}}
 
 \section{Directory Structure}
-\lstinputlisting[language={},style=raw]{./docs/report/file_listing}\newpage
+\lstinputlisting[language={},style=raw]{./docs/report/file\string_listing}
+\newpage
 
 \section{Source Code}
 \fancyhf[HR]{\footnotesize{Source Code}}
 
+\subsection{README}
+\fancyhead[HR]{\footnotesize{README}}
+\lstinputlisting[language={},style=raw]{./README}
+\newpage
+
+\subsection{Makefile}
 \fancyhead[HR]{\footnotesize{Makefile}}
-\lstinputlisting[language=Make,style=code]{./Makefile}\newpage
+\lstinputlisting[language=Make,style=code]{./Makefile}
+\newpage
 
+\subsection{linkedList.c}
 \fancyhead[HR]{\footnotesize{linkedList.c}}
-\lstinputlisting[language=C,style=code]{./src/linkedList.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/linkedList.c}
+\newpage
 
+\subsection{linkedList.h}
 \fancyhead[HR]{\footnotesize{linkedList.h}}
-\lstinputlisting[language=C,style=code]{./src/linkedList.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/linkedList.h}
+\newpage
 
+\subsection{queue.c}
 \fancyhead[HR]{\footnotesize{queue.c}}
-\lstinputlisting[language=C,style=code]{./src/queue.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/queue.c}
+\newpage
 
+\subsection{queue.h}
 \fancyhead[HR]{\footnotesize{queue.h}}
-\lstinputlisting[language=C,style=code]{./src/queue.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/queue.h}
+\newpage
 
+\subsection{file.c}
 \fancyhead[HR]{\footnotesize{file.c}}
-\lstinputlisting[language=C,style=code]{./src/file.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/file.c}
+\newpage
 
+\subsection{file.h}
 \fancyhead[HR]{\footnotesize{file.h}}
-\lstinputlisting[language=C,style=code]{./src/file.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/file.h}
+\newpage
 
+\subsection{scheduler.c}
 \fancyhead[HR]{\footnotesize{scheduler.c}}
-\lstinputlisting[language=C,style=code]{./src/scheduler.c}\newpage
+\lstinputlisting[language=C,style=code]{./src/scheduler.c}
+\newpage
 
+\subsection{scheduler.h}
 \fancyhead[HR]{\footnotesize{scheduler.h}}
-\lstinputlisting[language=C,style=code]{./src/scheduler.h}\newpage
+\lstinputlisting[language=C,style=code]{./src/scheduler.h}
+\newpage
+
+\section{Discussion}
+
+\subsection{Mutual Exclusion}
+As both \code{task()} and \code{cpu()} uses \code{readyQueue} and
+\code{logFile}, it is apporpriate to have two separated mutex locks,
+\code{queueMutex} and \code{logMutex}, to give access to only one thread
+who wishes to access those resources. This ensures that mutual exclusion is
+achieved when accessing \code{readyQueue} and \code{logFile}.
+
+Statistical variables like \code{numTasks}, \code{totalWaitingTime} and
+\code{totalTurnaroundTime} are only shared between \code{cpu()} threads.
+Therefore, \code{statMutex} will be used to get mutual exclusion for
+accessing these statistics.
+
+When creating \code{task()} and \code{cpu()} threads, it would be ideal
+that the task thread acquires the \code{queueMutex} first as to be able to
+starting populating the \code{readyQueue} with tasks for \code{cpu()} to
+process. In some rare cases, \code{cpu()} threads are able to acquire the
+locks first. In these scenerios, we would have to use
+\code{pthread\string_cond\string_signal()},
+\code{pthread\string_cond\string_wait()} as well as
+\code{pthread\string_cond\string_broadcast()} in order to communicate
+within the two threads.
+
+Both threads are able to run concurrently, but \code{task()} will block
+\code{cpu()} if the readyQueue is empty and \code{cpu()} will block
+\code{task()} if the readyQueue is full. To achieve this, we used signals
+and wait to suspend threads, until readyQueue is neither full nor empty.
+
+\subsection{Problems and Caveats}
+In cases where the maximum readyQueue size is 1, then the logic of adding
+to the readyQueue is different. This is due to checking if there is more
+than 2 free slots available. In the case for 1, no tasks ever gets added
+into the readyQueue, thus an additional adding algorithm is needed to
+handle readyQueues of maximum size 1.
+
+Often, when running the program through valgrind's memory checking tool, it
+could potentially deadlock the application. This may be due to how valgrind
+makes multithreaded programs run with one thread. This is observable as
+only one cpu thread gets to service the tasks, while the other cpu threads
+are stuck waiting for the signal to arrive to them. This may have now been
+fixed with using broadcast instead of signal.
+
+As far as all my testing has gone, I have not been able to find any errors
+regarding memory leaks, thread errors or logic errors.
+
+\newpage
+\section{Demonstration}
+
+\subsection{Sample Task Files}
+
+\subsubsection{small\_tasks}
+\fancyhead[HR]{\footnotesize{small\_tasks}}
+\lstinputlisting[language={},style=raw]{./resources/small\string_tasks}
+
+\subsubsection{tasks}
+\fancyhead[HR]{\footnotesize{tasks}}
+\begin{multicols}{4}
+\lstinputlisting[language={},style=raw]{./resources/tasks}
+\end{multicols}
+
+Note: While this is the actual task file that the program will be reading when
+formally marking, we will be using the small\_tasks for the report's
+demonstration
+\newpage
+
+\subsection{Demonstration}
+\lstinputlisting[language={},style=raw]{./docs/report/demo}
+\newpage
+
 
 \end{document}
