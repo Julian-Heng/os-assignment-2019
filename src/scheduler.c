@@ -225,6 +225,7 @@ void* task(void* args)
     char* timeStr;
     int numTasks;
     time_t rawSecs;
+    int i;
 
     numTasks = 0;
 
@@ -271,9 +272,6 @@ void* task(void* args)
             {
                 /* Add task */
                 taskThreadAddTask(readyQueue, taskFile, logFile);
-
-                /* Wake cpu thread */
-                pthread_cond_broadcast(&queueFull);
                 numTasks++;
             }
         }
@@ -295,32 +293,29 @@ void* task(void* args)
                 }
             }
 
-            /* Add tasks into readyQueue if there is space to add 2
+            /**
+             * Add tasks into readyQueue if there is space to add 2
              * Cpu thread can start working on the tasks as soon as
              * they're added
              **/
             if (getQueueRemainingCapacity(readyQueue) > 1 &&
                 ! isQueueEmpty(taskFile->data))
             {
-                if (! isQueueEmpty(taskFile->data))
+                /* Add two task to readyQueue */
+                for (i = 0; i < 2; i++)
                 {
-                    /* Add task */
-                    taskThreadAddTask(readyQueue, taskFile, logFile);
-
-                    /* Wake cpu thread */
-                    pthread_cond_broadcast(&queueFull);
-                    numTasks++;
-                }
-
-                /* Run again to add twice */
-                if (! isQueueEmpty(taskFile->data))
-                {
-                    taskThreadAddTask(readyQueue, taskFile, logFile);
-                    pthread_cond_broadcast(&queueFull);
-                    numTasks++;
+                    if (! isQueueEmpty(taskFile->data))
+                    {
+                        /* Add task */
+                        taskThreadAddTask(readyQueue, taskFile, logFile);
+                        numTasks++;
+                    }
                 }
             }
         }
+
+        /* Wake cpu thread */
+        pthread_cond_broadcast(&queueFull);
 
         /* Release queue lock */
         pthread_mutex_unlock(&queueMutex);
