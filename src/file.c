@@ -17,7 +17,8 @@
 /**
  * Allocates memory for a file struct
  * Initialise all variables to default
- * Takes in an int for the maximum row size of the file
+ * Takes in a string for filename and an int for the maximum row
+ * size of the file
  **/
 File* initFile(char* filename, int size)
 {
@@ -48,7 +49,12 @@ void readFile(File* file)
     {
         str = NULL;
 
-        /* Save line from file to str, then trim newline and enqueue */
+        /**
+         * fgets scans a line from the file, including the newline,
+         * so we would have to replace the newline with a null
+         * terminator to trim the string before enqueueing to the
+         * file queue
+         **/
         while ((str = (char*)malloc(sizeof(char) * BUFSIZ)) &&
                fgets(str, BUFSIZ, f) &&
                ! ferror(f))
@@ -73,41 +79,30 @@ void writeFile(File* file, char* mode)
 {
     FILE* f;
 
-    Queue* clone;
     QueueNode* node;
     char* str;
     int isMalloc;
-
     int length;
 
     f = fopen(file->filename, mode);
     str = NULL;
 
-    /* Check for file errors and if the File struct is not null */
     if (f && file && ! ferror(f))
     {
-        /**
-         * Create a duplicate File queue because dequeue removes them
-         * from the original File queue
-         **/
         length = file->rows;
-        clone = initQueue(length);
 
-        /* Loop until File queue is empty */
-        while (! isQueueEmpty(file->data))
+        /* Loop through the file queue */
+        while (length-- > 0)
         {
-            /* Dequeue and enqueue the file contents */
+            /* Dequeue and enqueue the file */
             node = dequeue(file->data, (void*)&str, &isMalloc);
             fprintf(f, "%s", str);
-            enqueue(clone, str, isMalloc);
+            enqueue(file->data, str, isMalloc);
 
             free(node);
             node = NULL;
         }
 
-        /* Clean the original queue and reassign to the File struct */
-        clearQueue(&(file->data));
-        file->data = clone;
         fclose(f);
     }
 }
