@@ -19,8 +19,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        f = initFile(INT_MAX);
-        setFilename(argv[1], f);
+        f = initFile(argv[1], INT_MAX);
 
         for (i = 0; i < 256; i++)
         {
@@ -28,7 +27,7 @@ int main(int argc, char** argv)
             memset(str, '*', i);
             str[i] = '\n';
             str[i + 1] = '\0';
-            addLineToFile(str, f);
+            addLineToFile(f, str);
         }
 
         writeFile(f, "w");

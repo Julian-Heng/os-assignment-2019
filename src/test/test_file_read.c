@@ -23,8 +23,7 @@ int main(int argc, char** argv)
         {
             fprintf(stdout, "\n");
 
-            f = initFile(INT_MAX);
-            setFilename(argv[i], f);
+            f = initFile(argv[i], INT_MAX);
             readFile(f);
 
             while (! isQueueEmpty(f->data))

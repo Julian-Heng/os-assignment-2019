@@ -19,12 +19,12 @@
  * Initialise all variables to default
  * Takes in an int for the maximum row size of the file
  **/
-File* initFile(int size)
+File* initFile(char* filename, int size)
 {
     File* file;
     if ((file = (File*)malloc(sizeof(File))))
     {
-        file->filename = NULL;
+        file->filename = filename;
         file->data = initQueue(size);
         file->rows = 0;
         file->cols = 0;
@@ -40,43 +40,21 @@ File* initFile(int size)
 void readFile(File* file)
 {
     FILE* f;
-    int cols, count, ch;
     char* str;
 
     f = fopen(file->filename, "r");
 
-    if (! ferror(f) && file)
+    if (f && file && ! ferror(f))
     {
-        cols = 0;
-        count = 0;
         str = NULL;
 
-        /* Get column count of the file */
-        while ((ch = fgetc(f)) != EOF && ! ferror(f))
-        {
-            if (ch == '\n')
-            {
-                cols = count > cols ? count : cols;
-                count = 0;
-            }
-            else
-            {
-                count++;
-            }
-        }
-
-        /* Set file pointer to the start of the file */
-        fseek(f, 0, SEEK_SET);
-
-        /* Plus two for newline and string terminator */
-        str = (char*)malloc((cols + 2) * sizeof(char));
-
         /* Save line from file to str, then trim newline and enqueue */
-        while (fgets(str, cols + 2, f))
+        while ((str = (char*)malloc(sizeof(char) * BUFSIZ)) &&
+               fgets(str, BUFSIZ, f) &&
+               ! ferror(f))
         {
             str[strcspn(str, "\n")] = '\0';
-            addLineToFile(str, file);
-            str = (char*)malloc((cols + 2) * sizeof(char));
+            addLineToFile(file, str);
         }
 
         /* Cleanup extra malloc call from loop */
@@ -106,7 +84,7 @@ void writeFile(File* file, char* mode)
     str = NULL;
 
     /* Check for file errors and if the File struct is not null */
-    if (! ferror(f) && file)
+    if (f && file && ! ferror(f))
     {
         /**
          * Create a duplicate File queue because dequeue removes them
@@ -135,28 +113,10 @@ void writeFile(File* file, char* mode)
 }
 
 /**
- * Set the filename in a File struct
- * Takes in the filename and a File struct
- **/
-void setFilename(char* filename, File* file)
-{
-    int len;
-
-    /* If file is not null */
-    if (file)
-    {
-        /* All filename in a File struct is the heap */
-        len = strlen(filename) + 1;
-        file->filename = malloc(sizeof(char) * len);
-        strncpy(file->filename, filename, len);
-    }
-}
-
-/**
  * Enqueue a line to a file
  * The line needs to be constructed in the calling function
  **/
-void addLineToFile(char* line, File* file)
+void addLineToFile(File* file, char* line)
 {
     int len = strlen(line);
 
@@ -164,7 +124,7 @@ void addLineToFile(char* line, File* file)
      * Check if the input line is longer than the current
      * longest line in the file
      **/
-    file->cols = len > file->cols ? len : file->cols;
+    file->cols = MAX(len, file->cols);
     enqueue(file->data, line, TRUE);
     (file->rows)++;
 }
@@ -175,14 +135,13 @@ void addLineToFile(char* line, File* file)
  **/
 void freeFile(File** file)
 {
-    if ((*file)->filename)
+    if (file)
     {
-        free((*file)->filename);
         (*file)->filename = NULL;
+
+        clearQueue(&((*file)->data));
+
+        free(*file);
+        *file = NULL;
     }
-
-    clearQueue(&((*file)->data));
-
-    free(*file);
-    *file = NULL;
 }

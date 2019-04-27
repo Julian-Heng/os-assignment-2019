@@ -21,12 +21,14 @@ typedef struct File
     int cols;
 } File;
 
+#define MAX(a, b) \
+    (a) > (b) ? (a) : (b)
+
 /* Function prototypes */
-File* initFile(int size);
+File* initFile(char* filename, int size);
 void readFile(File* file);
 void writeFile(File* file, char* mode);
-void setFilename(char* filename, File* file);
-void addLineToFile(char* line, File* file);
+void addLineToFile(File* file, char* line);
 void updateFileCount(File* file);
 void freeFile(File** file);
 

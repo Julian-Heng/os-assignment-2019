@@ -139,12 +139,9 @@ int run(char* filename, int max)
 
     readyQueue = initQueue(max);
 
-    taskFile = initFile(INT_MAX);
-    setFilename(filename, taskFile);
+    taskFile = initFile(filename, INT_MAX);
+    logFile = initFile(LOG_FILE, INT_MAX);
     readFile(taskFile);
-
-    logFile = initFile(INT_MAX);
-    setFilename(LOG_FILE, logFile);
 
     /**
      * Linking the shared data to the variables in this function
@@ -546,7 +543,7 @@ void logger(File* file, char* format, ...)
 #ifdef DEBUG
     fprintf(stderr, "%s", str);
 #endif
-    addLineToFile(str, file);
+    addLineToFile(file, str);
 }
 
 /**
