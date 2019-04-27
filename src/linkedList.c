@@ -3,6 +3,8 @@
  * Author:   Juilan Heng (19473701)
  * Purpose:  Provide the initialisation of a doubly linked double ended
  *           linked list as well as several utility functions.
+ *
+ * Note:     Modified linked list from UCP assignment 2018
  **/
 
 #include <stdlib.h>
