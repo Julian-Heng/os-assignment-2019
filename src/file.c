@@ -113,13 +113,11 @@ void writeFile(File* file, char* mode)
  **/
 void addLineToFile(File* file, char* line)
 {
-    int len = strlen(line);
-
     /**
      * Check if the input line is longer than the current
      * longest line in the file
      **/
-    file->cols = MAX(len, file->cols);
+    file->cols = MAX(strlen(line), file->cols);
     enqueue(file->data, line, TRUE);
     (file->rows)++;
 }
