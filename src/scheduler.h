@@ -84,7 +84,7 @@ typedef struct CpuData
 int run(char* filename, int max);
 void* task(void* args);
 void* cpu(void* args);
-void taskThreadAddTask(Queue* readyQueue, File* taskFile, File* logFile);
+void addTask(Queue* readyQueue, File* taskFile, File* logFile);
 void logCpuStat(File* logFile, int id, Task* task);
 void strTime(char** str, time_t secs);
 void logger(File* file, char* format, ...);

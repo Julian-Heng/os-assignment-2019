@@ -268,7 +268,7 @@ void* task(void* args)
                 ! isQueueEmpty(taskFile->data))
             {
                 /* Add task */
-                taskThreadAddTask(readyQueue, taskFile, logFile);
+                addTask(readyQueue, taskFile, logFile);
                 numTasks++;
             }
         }
@@ -304,7 +304,7 @@ void* task(void* args)
                     if (! isQueueEmpty(taskFile->data))
                     {
                         /* Add task */
-                        taskThreadAddTask(readyQueue, taskFile, logFile);
+                        addTask(readyQueue, taskFile, logFile);
                         numTasks++;
                     }
                 }
@@ -451,7 +451,7 @@ void* cpu(void* args)
  *
  * This function is assumed to have the queueMutex lock
  **/
-void taskThreadAddTask(Queue* readyQueue, File* taskFile, File* logFile)
+void addTask(Queue* readyQueue, File* taskFile, File* logFile)
 {
     Task* taskNode;
     QueueNode* node;
