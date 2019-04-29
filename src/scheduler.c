@@ -554,7 +554,6 @@ void logger(File* file, char* format, ...)
 int sanitizeTaskFile(File* file)
 {
     Queue* valid;
-    Queue* invalid;
 
     QueueNode* node;
     char* str;
@@ -567,26 +566,25 @@ int sanitizeTaskFile(File* file)
     {
         str = NULL;
         valid = initQueue(file->rows);
-        invalid = initQueue(file->rows);
 
-        /**
-         * Uses 2 queues to direct vaid and invalid entries in the task
-         * file
-         **/
-        while (! isQueueEmpty(file->data))
+        /* Add valid entries to a new file queue */
+        while ((node = dequeue(file->data, (void*)&str, &isMalloc)))
         {
-            node = dequeue(file->data, (void*)&str, &isMalloc);
-            enqueue(
-                sscanf(str, TASK_SCAN, &id, &time) == 2 ? valid : invalid,
-                str, isMalloc
-            );
+            if (sscanf(str, TASK_SCAN, &id, &time) == 2)
+            {
+                enqueue(valid, str, isMalloc);
+            }
+            else
+            {
+                free(str);
+                str = NULL;
+            }
 
             free(node);
             node = NULL;
         }
 
         clearQueue(&(file->data));
-        clearQueue(&invalid);
         file->data = valid;
     }
 
