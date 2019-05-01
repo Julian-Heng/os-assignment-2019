@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include "file.h"
-#include "queue.h"
 
 #define FALSE 0
 #define TRUE !FALSE

@@ -6,8 +6,6 @@
  **/
 
 #include <stdlib.h>
-
-#include "linkedList.h"
 #include "queue.h"
 
 #define FALSE 0
