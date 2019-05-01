@@ -28,7 +28,6 @@
 #define ERROR_ARGS 1
 #define ERROR_OUT_OF_BOUNDS 2
 
-#define TIME            "%02d:%02d:%02d"
 #define TIME_LENGTH     9
 
 /* String literals */
@@ -81,7 +80,7 @@ int main(int argc, char** argv)
     /* Argument parsing and validation */
     if (argc < MIN_ARGS)
     {
-        usage(argv[0]);
+        USAGE(argv[0]);
         ret = ERROR_ARGS;
     }
     else
@@ -95,7 +94,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            usage(argv[0]);
+            USAGE(argv[0]);
             ret = ERROR_OUT_OF_BOUNDS;
         }
     }
@@ -219,7 +218,7 @@ void* task(void* args)
     File* logFile = sharedData->logFile;
 
     /* These variables are local to task */
-    char* timeStr;
+    char timeStr[TIME_LENGTH];
     int numTasks;
     time_t rawSecs;
     int i;
@@ -240,12 +239,10 @@ void* task(void* args)
 
             /* Log task exiting */
             pthread_mutex_lock(&logMutex);
-            strTime(&timeStr, rawSecs);
+            STR_TIME(timeStr, rawSecs);
             logger(logFile, TASK_TALLY, numTasks);
             logger(logFile, TASK_TERMINATE, timeStr);
             logger(logFile, "\n");
-            free(timeStr);
-            timeStr = NULL;
             pthread_mutex_unlock(&logMutex);
 
             pthread_exit(NULL);
@@ -342,7 +339,7 @@ void* cpu(void* args)
     int isMalloc;
 
     int numTasks;
-    char* timeStr;
+    char timeStr[TIME_LENGTH];
 
     numTasks = 0;
 
@@ -403,12 +400,10 @@ void* cpu(void* args)
 
         /* Log service time */
         pthread_mutex_lock(&logMutex);
-        strTime(&timeStr, task->serviceTime);
+        STR_TIME(timeStr, task->serviceTime);
         logCpuStat(logFile, id, task);
         logger(logFile, SERVICE_TIME, timeStr);
         logger(logFile, "\n");
-        free(timeStr);
-        timeStr = NULL;
         pthread_mutex_unlock(&logMutex);
 
         /* "Process" the task */
@@ -422,18 +417,16 @@ void* cpu(void* args)
 
         /* Log completion time */
         pthread_mutex_lock(&logMutex);
-        strTime(&timeStr, task->completionTime);
+        STR_TIME(timeStr, task->completionTime);
         logCpuStat(logFile, id, task);
         logger(logFile, COMPLETE_TIME, timeStr);
         logger(logFile, "\n");
         pthread_mutex_unlock(&logMutex);
 
         /* Cleanup */
-        free(timeStr);
         free(task);
         free(node);
 
-        timeStr = NULL;
         task = NULL;
         node = NULL;
 
@@ -456,7 +449,7 @@ void addTask(Queue* readyQueue, File* taskFile, File* logFile)
     Task* taskNode;
     QueueNode* node;
 
-    char* timeStr;
+    char timeStr[TIME_LENGTH];
     char* str;
     int isMalloc;
 
@@ -476,18 +469,16 @@ void addTask(Queue* readyQueue, File* taskFile, File* logFile)
 
     /* Log arrival time */
     pthread_mutex_lock(&logMutex);
-    strTime(&timeStr, taskNode->arrivalTime);
+    STR_TIME(timeStr, taskNode->arrivalTime);
     logger(logFile, TASK_1, taskNode->id, taskNode->time);
     logger(logFile, ARRIVAL_TIME, timeStr);
     logger(logFile, "\n");
     pthread_mutex_unlock(&logMutex);
 
     /* Cleanup */
-    free(timeStr);
     free(str);
     free(node);
 
-    timeStr = NULL;
     str = NULL;
     node = NULL;
 }
@@ -498,29 +489,12 @@ void addTask(Queue* readyQueue, File* taskFile, File* logFile)
  **/
 void logCpuStat(File* logFile, int id, Task* task)
 {
-    char* timeStr;
+    char timeStr[TIME_LENGTH];
 
-    strTime(&timeStr, task->arrivalTime);
+    STR_TIME(timeStr, task->arrivalTime);
     logger(logFile, CPU_HEAD, id);
     logger(logFile, TASK_2, task->id);
     logger(logFile, ARRIVAL_TIME, timeStr);
-
-    free(timeStr);
-    timeStr = NULL;
-}
-
-/**
- * Fills a string with the current time
- **/
-void strTime(char** str, time_t secs)
-{
-    struct tm* time = localtime(&secs);
-
-    *str = (char*)malloc(sizeof(char) * TIME_LENGTH);
-    memset(*str, '\0', TIME_LENGTH);
-    sprintf(*str, TIME, time->tm_hour,
-                        time->tm_min,
-                        time->tm_sec);
 }
 
 /**
@@ -589,12 +563,4 @@ int sanitizeTaskFile(File* file)
     }
 
     return ! isQueueEmpty(file->data);
-}
-
-/**
- * Print usage message
- **/
-void usage(char* exe)
-{
-    fprintf(stderr, "Usage: %s [task-file] [2-10]\n", exe);
 }

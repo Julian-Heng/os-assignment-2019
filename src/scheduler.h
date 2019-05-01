@@ -80,6 +80,12 @@ typedef struct CpuData
 #define INT_REAL_DIV(a, b) \
     ((double)(a) / (double)(b))
 
+#define STR_TIME(str, secs) \
+    strftime((str), TIME_LENGTH, "%H:%M:%S", localtime(&(secs)))
+
+#define USAGE(exe) \
+    fprintf(stderr, "Usage: %s [task-file] [2-10]\n", exe);
+
 /* Function prototypes */
 int run(char* filename, int max);
 void* task(void* args);
