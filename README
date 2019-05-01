@@ -12,3 +12,9 @@ Run scheduler:
   Usage: ./build/scheduler [task-file] [2-10]
 
   $ ./build/scheduler ./resources/tasks 5
+
+Compile report
+  $ make docs
+
+Report location
+  $ xdg-open ./docs/report/AssignmentDoc.pdf
