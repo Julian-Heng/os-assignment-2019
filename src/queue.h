@@ -4,8 +4,8 @@
 #include "linkedList.h"
 
 /**
- * Queue struct that contains a LinkedList and an integer for the maximum
- * amount of nodes allowed for the queue
+ * Queue struct that contains a LinkedList and an integer for the
+ * maximum amount of nodes allowed for the queue
  **/
 typedef struct Queue
 {
