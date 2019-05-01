@@ -108,13 +108,13 @@ docs: $(REPORT)
 			printf "\\n$$ %s\\n" "cat ./simulation_log"; \
 			cat ./simulation_log; \
 			if command -v valgrind > /dev/null 2>&1; then \
-				for i in "" "helgrind" "drd"; do \
+				for i in "memcheck" "helgrind" "drd"; do \
 					printf "\\n$$ %s %s %s %s\\n" \
 						   "valgrind" \
-						   "$${i:+--tool=$$i}" \
+						   "--tool=$$i" \
 						   "./build/scheduler" \
 						   "./resources/small_tasks 5"; \
-					valgrind $${i:+--tool=$$i} \
+					valgrind --tool=$$i \
 							 ./build/scheduler \
 							 ./resources/small_tasks 5 2>&1; \
 				done; \
@@ -126,14 +126,14 @@ docs: $(REPORT)
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
 
 dist: dist_clean docs
-	$(RM) -rv $(HOME)/OS
-	mkdir -p $(HOME)/OS
+	mkdir -p $(HOME)/OS/assignment
+	cp -r ./* $(HOME)/OS/assignment
 	( \
+		cd $(HOME)/OS/assignment; \
+		$(RM) -rv ./build; \
 		cd ..; \
-		git archive -o $(HOME)/OS/19473701_OS_assignment.zip \
-			HEAD ./assignment; \
+		zip -r 19473701_OS_Assignment.zip ./assignment -x \*.swp; \
 	)
-	unzip $(HOME)/OS/19473701_OS_assignment.zip -d $(HOME)/OS
 
 dist_clean:
 	$(RM) -rv $(HOME)/OS
