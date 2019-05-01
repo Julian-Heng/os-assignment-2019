@@ -123,6 +123,20 @@ docs: $(REPORT)
 	fi
 
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
+	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
+
+dist: dist_clean docs
+	$(RM) -rv $(HOME)/OS
+	mkdir -p $(HOME)/OS
+	( \
+		cd ..; \
+		git archive -o $(HOME)/OS/19473701_OS_assignment.zip \
+			HEAD ./assignment; \
+	)
+	unzip $(HOME)/OS/19473701_OS_assignment.zip -d $(HOME)/OS
+
+dist_clean:
+	$(RM) -rv $(HOME)/OS
 
 clean:
 	$(RM) -rv $(BUILD) $(REPORT) *_log
