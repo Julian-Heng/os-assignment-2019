@@ -4,7 +4,6 @@
 int testQueueConstructor();
 int testQueueEnqueue();
 int testQueueDequeue();
-int testQueuePeek();
 int testQueueClear();
 
 int printResult(int cond);

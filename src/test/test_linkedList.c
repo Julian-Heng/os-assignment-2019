@@ -100,9 +100,9 @@ int testListConstructor(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing initList() with isListEmpty(): ");
+        fprintf(stdout, "Testing initList() with IS_LIST_EMPTY(): ");
         list = initList();
-        status = printResult(!! list && isListEmpty(list));
+        status = printResult(!! list && IS_LIST_EMPTY(list));
         free(list);
         list = NULL;
     }
@@ -849,9 +849,9 @@ int testListPeek(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing peekFirst() on an empty list: ");
+        fprintf(stdout, "Testing PEEK_FIRST() on an empty list: ");
         list = initList();
-        peekFirst(list, &voidPtr, &ret);
+        PEEK_FIRST(list, &voidPtr, &ret);
         status = printResult(! voidPtr &&
                              ret == -1);
         free(list);
@@ -860,11 +860,11 @@ int testListPeek(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing peekFirst() on a single node list: ");
+        fprintf(stdout, "Testing PEEK_FIRST() on a single node list: ");
         list = initList();
         i = 5;
         insertFirst(list, &i, FALSE);
-        peekFirst(list, &voidPtr, &ret);
+        PEEK_FIRST(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
                              *(int*)(voidPtr) == i &&
                              ! ret);
@@ -880,7 +880,7 @@ int testListPeek(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing peekFirst() on a multiple node list: ");
+        fprintf(stdout, "Testing PEEK_FIRST() on a multiple node list: ");
         list = initList();
 
         for (i = 0; i < 5; i++)
@@ -890,7 +890,7 @@ int testListPeek(void)
             insertLast(list, j, TRUE);
         }
 
-        peekFirst(list, &voidPtr, &ret);
+        PEEK_FIRST(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
                              *(int*)(voidPtr) == 0 &&
                              ret);
@@ -918,9 +918,9 @@ int testListPeek(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing peekLast() on an empty list: ");
+        fprintf(stdout, "Testing PEEK_LAST() on an empty list: ");
         list = initList();
-        peekLast(list, &voidPtr, &ret);
+        PEEK_LAST(list, &voidPtr, &ret);
         status = printResult(! voidPtr &&
                              ret == -1);
         free(list);
@@ -929,11 +929,11 @@ int testListPeek(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing peekLast() on a single node list: ");
+        fprintf(stdout, "Testing PEEK_LAST() on a single node list: ");
         list = initList();
         i = 5;
         insertLast(list, &i, FALSE);
-        peekLast(list, &voidPtr, &ret);
+        PEEK_LAST(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
                              *(int*)(voidPtr) == i &&
                              ! ret);
@@ -949,7 +949,7 @@ int testListPeek(void)
 
     if (status)
     {
-        fprintf(stdout, "Testing peekLast() on a multiple node list: ");
+        fprintf(stdout, "Testing PEEK_LAST() on a multiple node list: ");
         list = initList();
 
         for (i = 0; i < 5; i++)
@@ -959,7 +959,7 @@ int testListPeek(void)
             insertLast(list, j, TRUE);
         }
 
-        peekLast(list, &voidPtr, &ret);
+        PEEK_LAST(list, &voidPtr, &ret);
         status = printResult(!! voidPtr &&
                              *(int*)(voidPtr) == 4 &&
                              ret);

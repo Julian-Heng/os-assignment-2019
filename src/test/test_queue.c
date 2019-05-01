@@ -13,15 +13,14 @@ int main(void)
 {
     int count = 0;
     int status = TRUE;
-    int (*funcs[5])(void) = {
+    int (*funcs[4])(void) = {
         testQueueConstructor,
         testQueueEnqueue,
         testQueueDequeue,
-        testQueuePeek,
         testQueueClear
     };
 
-    while (status && count < 5)
+    while (status && count < 4)
     {
         status = (*funcs[count++])();
     }
@@ -41,9 +40,9 @@ int testQueueConstructor()
         fprintf(stdout, "Testing initQueue(): ");
         q = initQueue(5);
         status = printResult(!! q &&
-                             isQueueEmpty(q) &&
-                             getQueueLength(q) == 0 &&
-                             getQueueMaxLength(q) == 5);
+                             IS_QUEUE_EMPTY(q) &&
+                             GET_QUEUE_LEN(q) == 0 &&
+                             GET_QUEUE_MAX_LEN(q) == 5);
         free(q->link);
         q->link = NULL;
 
@@ -70,8 +69,8 @@ int testQueueEnqueue()
         q = initQueue(5);
         enqueue(q, NULL, FALSE);
         status = printResult(!! q &&
-                             getQueueLength(q) == 1 &&
-                             getQueueMaxLength(q) == 5 &&
+                             GET_QUEUE_LEN(q) == 1 &&
+                             GET_QUEUE_MAX_LEN(q) == 5 &&
                              ! (q->link->head->isMalloc) &&
                              ! (q->link->head->value));
 
@@ -92,8 +91,8 @@ int testQueueEnqueue()
         str = "test string";
         enqueue(q, str, FALSE);
         status = printResult(!! q &&
-                             getQueueLength(q) == 1 &&
-                             getQueueMaxLength(q) == 5 &&
+                             GET_QUEUE_LEN(q) == 1 &&
+                             GET_QUEUE_MAX_LEN(q) == 5 &&
                              ! (q->link->head->isMalloc) &&
                              ! strcmp(q->link->head->value, "test string"));
 
@@ -115,8 +114,8 @@ int testQueueEnqueue()
         strncpy(str, "test string", strlen("test string") + 1);
         enqueue(q, str, TRUE);
         status = printResult(!! q &&
-                             getQueueLength(q) == 1 &&
-                             getQueueMaxLength(q) == 5 &&
+                             GET_QUEUE_LEN(q) == 1 &&
+                             GET_QUEUE_MAX_LEN(q) == 5 &&
                              q->link->head->isMalloc &&
                              ! strcmp(q->link->head->value, "test string"));
 
@@ -1003,62 +1002,6 @@ int testQueueDequeue()
             free(n);
             n = NULL;
         }
-
-        free(q->link);
-        q->link = NULL;
-
-        free(q);
-        q = NULL;
-    }
-
-    return status;
-}
-
-int testQueuePeek()
-{
-    Queue* q;
-
-    void* voidPtr;
-    int ret;
-    int i;
-
-    int status = TRUE;
-
-    voidPtr = NULL;
-    q = NULL;
-
-    header("Queue Peek");
-
-    if (status)
-    {
-        fprintf(stdout, "Testing peek() on an empty queue: ");
-        q = initQueue(5);
-        peek(q, &voidPtr, &ret);
-        status = printResult(! voidPtr &&
-                             ret == -1);
-
-        free(q->link);
-        q->link = NULL;
-
-        free(q);
-        q = NULL;
-    }
-
-    if (status)
-    {
-        fprintf(stdout, "Testing peek() on a populated queue: ");
-        q = initQueue(5);
-        i = 5;
-        enqueue(q, &i, FALSE);
-        peek(q, &voidPtr, &ret);
-        status = printResult(!! voidPtr &&
-                             *(int*)(voidPtr) == i &&
-                             ! ret);
-
-        voidPtr = NULL;
-
-        free(q->link->head);
-        q->link->head = NULL;
 
         free(q->link);
         q->link = NULL;
