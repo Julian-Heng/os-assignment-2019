@@ -120,9 +120,12 @@ fixed with using broadcast instead of signal. However, the problem still
 persist.
 
 As far as testing is concerned, the program passed all valgrind checks,
-including helgrind and drd as well as multiple edge cases for task files. Input
-task files that contains invalid entries will be ignored, thus the program can
-support empty files, single line file and mixed format task files.
+including helgrind and drd as well as multiple edge cases for task files except
+for single task files. Under valgrind's environment, single task files fail
+often, and when they do finish, they always report back with memory leaks, even
+though there are no memory leaks for any other input files. Input task files
+that contains invalid entries will be ignored, thus the program can support
+empty files, single line file and mixed format task files.
 
 \newpage
 \section{Demonstration}
