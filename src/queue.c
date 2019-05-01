@@ -51,39 +51,9 @@ QueueNode* dequeue(Queue* queue, void** val, int* isMalloc)
     return removeFirst(queue->link, val, isMalloc);
 }
 
-void peek(Queue* queue, void** val, int* isMalloc)
-{
-    peekFirst(queue->link, val, isMalloc);
-}
-
-int getQueueLength(Queue* queue)
-{
-    return queue->link->length;
-}
-
-int getQueueMaxLength(Queue* queue)
-{
-    return queue->max;
-}
-
-int getQueueRemainingCapacity(Queue* queue)
-{
-    return queue->max - queue->link->length;
-}
-
 void clearQueue(Queue** queue)
 {
     clearList(&((*queue)->link));
     free(*queue);
     *queue = NULL;
-}
-
-int isQueueEmpty(Queue* queue)
-{
-    return isListEmpty(queue->link);
-}
-
-int isQueueFull(Queue* queue)
-{
-    return queue->max == queue->link->length;
 }

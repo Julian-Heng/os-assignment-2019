@@ -20,12 +20,15 @@ typedef LinkedListNode QueueNode;
 Queue* initQueue(int max);
 int enqueue(Queue* queue, void* val, int isMalloc);
 QueueNode* dequeue(Queue* queue, void** val, int* isMalloc);
-void peek(Queue* queue, void** val, int* isMalloc);
-int getQueueLength(Queue* queue);
-int getQueueMaxLength(Queue* queue);
-int getQueueRemainingCapacity(Queue* queue);
 void clearQueue(Queue** queue);
-int isQueueEmpty(Queue* queue);
-int isQueueFull(Queue* queue);
+
+#define peek(queue, val, isMalloc) \
+    peekFirst((queue)->link, val, isMalloc)
+
+#define getQueueLength(queue)            (queue)->link->length
+#define getQueueMaxLength(queue)         (queue)->max
+#define getQueueRemainingCapacity(queue) (queue)->max - (queue)->link->length
+#define isQueueEmpty(queue)              isListEmpty((queue)->link)
+#define isQueueFull(queue)               queue->max == queue->link->length
 
 #endif /* End of queue.h */
