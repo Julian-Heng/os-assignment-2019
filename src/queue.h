@@ -23,13 +23,10 @@ QueueNode* dequeue(Queue* queue, void** val, int* isMalloc);
 void clearQueue(Queue** queue);
 
 /* Macros, since queue is a wrapper for a linked list */
-#define peek(queue, val, isMalloc) \
-    peekFirst((queue)->link, val, isMalloc)
-
-#define getQueueLength(queue)            (queue)->link->length
-#define getQueueMaxLength(queue)         (queue)->max
-#define getQueueRemainingCapacity(queue) (queue)->max - (queue)->link->length
-#define isQueueEmpty(queue)              isListEmpty((queue)->link)
-#define isQueueFull(queue)               queue->max == queue->link->length
+#define GET_QUEUE_LEN(queue)            (queue)->link->length
+#define GET_QUEUE_MAX_LEN(queue)         (queue)->max
+#define GET_QUEUE_REMAIN_CAPACITY(queue) (queue)->max - (queue)->link->length
+#define IS_QUEUE_EMPTY(queue)              IS_LIST_EMPTY((queue)->link)
+#define IS_QUEUE_FULL(queue)               queue->max == queue->link->length
 
 #endif /* End of queue.h */

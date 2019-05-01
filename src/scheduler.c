@@ -231,7 +231,7 @@ void* task(void* args)
         pthread_mutex_lock(&queueMutex);
 
         /* Check for exit condition */
-        if (isQueueEmpty(taskFile->data))
+        if (IS_QUEUE_EMPTY(taskFile->data))
         {
             /* Release lock*/
             pthread_mutex_unlock(&queueMutex);
@@ -249,20 +249,20 @@ void* task(void* args)
         }
 
         /* Different logic for a readyQueue with a max size of 1 */
-        if (getQueueMaxLength(readyQueue) == 1)
+        if (GET_QUEUE_MAX_LEN(readyQueue) == 1)
         {
-            if (isQueueFull(readyQueue))
+            if (IS_QUEUE_FULL(readyQueue))
             {
                 pthread_cond_broadcast(&queueFull);
 
-                while (isQueueFull(readyQueue))
+                while (IS_QUEUE_FULL(readyQueue))
                 {
                     pthread_cond_wait(&queueEmpty, &queueMutex);
                 }
             }
 
-            if (isQueueEmpty(readyQueue) &&
-                ! isQueueEmpty(taskFile->data))
+            if (IS_QUEUE_EMPTY(readyQueue) &&
+                ! IS_QUEUE_EMPTY(taskFile->data))
             {
                 /* Add task */
                 addTask(readyQueue, taskFile, logFile);
@@ -272,7 +272,7 @@ void* task(void* args)
         else
         {
             /* Check if readyQueue has less than 2 free slots */
-            if (getQueueRemainingCapacity(readyQueue) < 2)
+            if (GET_QUEUE_REMAIN_CAPACITY(readyQueue) < 2)
             {
                 /* readyQueue is full */
                 pthread_cond_broadcast(&queueFull);
@@ -281,7 +281,7 @@ void* task(void* args)
                  * Wait for the queue to be empty/not full The task
                  * threads is blocked until the readyQueue is not full
                  **/
-                while (getQueueRemainingCapacity(readyQueue) < 2)
+                while (GET_QUEUE_REMAIN_CAPACITY(readyQueue) < 2)
                 {
                     pthread_cond_wait(&queueEmpty, &queueMutex);
                 }
@@ -292,13 +292,13 @@ void* task(void* args)
              * Cpu thread can start working on the tasks as soon as
              * they're added
              **/
-            if (getQueueRemainingCapacity(readyQueue) > 1 &&
-                ! isQueueEmpty(taskFile->data))
+            if (GET_QUEUE_REMAIN_CAPACITY(readyQueue) > 1 &&
+                ! IS_QUEUE_EMPTY(taskFile->data))
             {
                 /* Add two task to readyQueue */
                 for (i = 0; i < 2; i++)
                 {
-                    if (! isQueueEmpty(taskFile->data))
+                    if (! IS_QUEUE_EMPTY(taskFile->data))
                     {
                         /* Add task */
                         addTask(readyQueue, taskFile, logFile);
@@ -349,7 +349,7 @@ void* cpu(void* args)
         pthread_mutex_lock(&queueMutex);
 
         /* Check for exit condition */
-        if (isQueueEmpty(taskFile->data) && isQueueEmpty(readyQueue))
+        if (IS_QUEUE_EMPTY(taskFile->data) && IS_QUEUE_EMPTY(readyQueue))
         {
             /* Release lock*/
             pthread_mutex_unlock(&queueMutex);
@@ -362,7 +362,7 @@ void* cpu(void* args)
             pthread_exit(NULL);
         }
 
-        if (isQueueEmpty(readyQueue))
+        if (IS_QUEUE_EMPTY(readyQueue))
         {
             /* readyQueue is empty */
             pthread_cond_signal(&queueEmpty);
@@ -372,7 +372,7 @@ void* cpu(void* args)
              * The cpu thread is blocked until the readyQueue is not
              * empty
              **/
-            while (isQueueEmpty(readyQueue))
+            while (IS_QUEUE_EMPTY(readyQueue))
             {
                 pthread_cond_wait(&queueFull, &queueMutex);
             }
@@ -562,5 +562,5 @@ int sanitizeTaskFile(File* file)
         file->data = valid;
     }
 
-    return ! isQueueEmpty(file->data);
+    return ! IS_QUEUE_EMPTY(file->data);
 }
