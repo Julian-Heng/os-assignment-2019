@@ -63,17 +63,22 @@ typedef struct LinkedList
         (a)->prev = (b); \
     }
 
+/* Peek macros that determine which node to use */
+#define peekFirst(list, ptr, isMalloc) peek((list)->head, (ptr), (isMalloc))
+#define peekLast(list, ptr, isMalloc)  peek((list)->tail, (ptr), (isMalloc))
+
+#define getListLength(list) list->length
+#define isListEmpty(list) \
+    ((list) && (! ((list)->head)) && (! ((list)->tail)) && ! (list)->length)
+
 /* Function prototypes */
 LinkedListNode* initNode(void* newValue, int malloc);
-LinkedList* initList();
+LinkedList* initList(void);
 void insertFirst(LinkedList* list, void* newValue, int malloc);
 void insertLast(LinkedList* list, void* newValue, int malloc);
 LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc);
 LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc);
-void peekFirst(LinkedList* list, void** voidPtr, int* isMalloc);
-void peekLast(LinkedList* list, void** voidPtr, int* isMalloc);
-int getListLength(LinkedList* list);
+void peek(LinkedListNode* node, void** voidPtr, int* isMalloc);
 void clearList(LinkedList** list);
-int isListEmpty(LinkedList* list);
 
 #endif /* End of linkedList.h */
