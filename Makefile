@@ -45,12 +45,13 @@ runtest_queue: test_queue
 	valgrind $(BUILD)/test_queue
 
 runtest_scheduler: scheduler_debug
-	for i in 1 2 3 4 5 6 7 8 9 10; do \
-		for tool in helgrind drd; do \
+	bash -c ' \
+	for i in {1..10}; do \
+		for tool in "memcheck" "helgrind" "drd"; do \
 			valgrind --tool="$$tool" \
-				./build/scheduler ./resources/small_tasks "$$i"; \
+				./build/scheduler <(head -n 5 ./resources/small_tasks) "$$i"; \
 		done; \
-	done
+	done'
 
 test_linkedList: linkedList
 	$(CC) $(CFLAGS) -o $(OBJ)/test_linkedList.o -c $(TEST)/test_linkedList.c
