@@ -22,6 +22,7 @@ int enqueue(Queue* queue, void* val, int isMalloc);
 QueueNode* dequeue(Queue* queue, void** val, int* isMalloc);
 void clearQueue(Queue** queue);
 
+/* Macros, since queue is a wrapper for a linked list */
 #define peek(queue, val, isMalloc) \
     peekFirst((queue)->link, val, isMalloc)
 
