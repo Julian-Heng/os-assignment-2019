@@ -95,6 +95,5 @@ void logCpuStat(File* logFile, int id, Task* task);
 void strTime(char** str, time_t secs);
 void logger(File* file, char* format, ...);
 int sanitizeTaskFile(File* file);
-void usage(char* exe);
 
 #endif /* End of scheduler.h */
