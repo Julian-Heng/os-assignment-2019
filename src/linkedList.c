@@ -69,7 +69,7 @@ void insertFirst(LinkedList* list, void* newValue, int isMalloc)
     newNode = initNode(newValue, isMalloc);
 
     /* Special case for empty list */
-    if (list && IS_LIST_EMPTY(list))
+    if (list && isListEmpty(list))
     {
         list->head = newNode;
         list->tail = newNode;
@@ -101,7 +101,7 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
     newNode = initNode(newValue, isMalloc);
 
     /* Special case for empty list */
-    if (list && IS_LIST_EMPTY(list))
+    if (list && isListEmpty(list))
     {
         list->head = newNode;
         list->tail = newNode;

@@ -64,11 +64,11 @@ typedef struct LinkedList
     }
 
 /* Peek macros that determine which node to use */
-#define PEEK_FIRST(list, ptr, isMalloc) peek((list)->head, (ptr), (isMalloc))
-#define PEEK_LAST(list, ptr, isMalloc)  peek((list)->tail, (ptr), (isMalloc))
+#define peekFirst(list, ptr, isMalloc) peek((list)->head, (ptr), (isMalloc))
+#define peekLast(list, ptr, isMalloc)  peek((list)->tail, (ptr), (isMalloc))
 
-#define GET_LIST_LEN(list) list->length
-#define IS_LIST_EMPTY(list) \
+#define getListLength(list) list->length
+#define isListEmpty(list) \
     ((list) && (! ((list)->head)) && (! ((list)->tail)) && ! (list)->length)
 
 /* Function prototypes */
