@@ -136,8 +136,8 @@ int testQueueEnqueue()
     {
         fprintf(stdout, "Testing clear() with a full queue: ");
         q = initQueue(2);
-        enqueue(q, NULL, FALSE);
-        enqueue(q, NULL, FALSE);
+        status = enqueue(q, NULL, FALSE);
+        status = enqueue(q, NULL, FALSE);
         status = printResult(! enqueue(q, NULL, FALSE));
 
         while (q->link->head != NULL)
