@@ -15,7 +15,6 @@
 
 /* Static functions */
 static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc);
-static void clearListRecurse(LinkedListNode** node);
 static void freeNode(LinkedListNode** node);
 
 /**
@@ -134,6 +133,8 @@ void insertLast(LinkedList* list, void* newValue, int isMalloc)
 LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 {
     LinkedListNode* node = list->head;
+    *voidPtr = NULL;
+    *isMalloc = -1;
 
     /* If node is null, means that head is null and the list is empty */
     if (node)
@@ -153,11 +154,6 @@ LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 
         (list->length)--;
     }
-    else
-    {
-        *voidPtr = NULL;
-        *isMalloc = -1;
-    }
 
     return node;
 }
@@ -168,6 +164,9 @@ LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc)
 LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
 {
     LinkedListNode* node = list->tail;
+
+    *voidPtr = NULL;
+    *isMalloc = -1;
 
     /* If node is null, means that tail is null and the list is empty */
     if (node)
@@ -185,11 +184,6 @@ LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc)
         }
 
         (list->length)--;
-    }
-    else
-    {
-        *voidPtr = NULL;
-        *isMalloc = -1;
     }
 
     return node;
@@ -219,16 +213,14 @@ void peekLast(LinkedList* list, void** voidPtr, int* isMalloc)
  **/
 static void peek(LinkedListNode* node, void** voidPtr, int* isMalloc)
 {
+    *voidPtr = NULL;
+    *isMalloc = -1;
+
     /* Set to voidPtr to null if node is null */
     if (node)
     {
         *voidPtr = node->value;
         *isMalloc = node->isMalloc;
-    }
-    else
-    {
-        *voidPtr = NULL;
-        *isMalloc = -1;
     }
 }
 
@@ -245,27 +237,19 @@ int getListLength(LinkedList* list)
  **/
 void clearList(LinkedList** list)
 {
+    LinkedListNode* node;
+
     if (*list)
     {
-        if (! isListEmpty(*list))
+        while ((*list)->head)
         {
-            clearListRecurse(&((*list)->head));
+            node = (*list)->head;
+            (*list)->head = (*list)->head->next;
+            freeNode(&node);
         }
 
         free(*list);
         *list = NULL;
-    }
-}
-
-/**
- * Recursively removes the node in the list
- **/
-static void clearListRecurse(LinkedListNode** node)
-{
-    if (*node)
-    {
-        clearListRecurse(&((*node)->next));
-        freeNode(node);
     }
 }
 
@@ -276,14 +260,17 @@ static void clearListRecurse(LinkedListNode** node)
  **/
 static void freeNode(LinkedListNode** node)
 {
-    if ((*node)->isMalloc && (*node)->value)
+    if (*node)
     {
-        free((*node)->value);
-        (*node)->value = NULL;
-    }
+        if ((*node)->isMalloc && (*node)->value)
+        {
+            free((*node)->value);
+            (*node)->value = NULL;
+        }
 
-    free(*node);
-    *node = NULL;
+        free(*node);
+        *node = NULL;
+    }
 }
 
 /**
@@ -291,8 +278,5 @@ static void freeNode(LinkedListNode** node)
  **/
 int isListEmpty(LinkedList* list)
 {
-    return (list &&
-            (! (list->head)) &&
-            (! (list->tail)) &&
-            list->length == 0);
+    return (list && (! list->head) && (! list->tail) && ! list->length);
 }
