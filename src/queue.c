@@ -51,11 +51,6 @@ QueueNode* dequeue(Queue* queue, void** val, int* isMalloc)
     return removeFirst(queue->link, val, isMalloc);
 }
 
-void peek(Queue* queue, void** val, int* isMalloc)
-{
-    peekFirst(queue->link, val, isMalloc);
-}
-
 int getQueueLength(Queue* queue)
 {
     return queue->link->length;

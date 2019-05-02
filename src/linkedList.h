@@ -80,5 +80,6 @@ LinkedListNode* removeFirst(LinkedList* list, void** voidPtr, int* isMalloc);
 LinkedListNode* removeLast(LinkedList* list, void** voidPtr, int* isMalloc);
 void peek(LinkedListNode* node, void** voidPtr, int* isMalloc);
 void clearList(LinkedList** list);
+int isListEmpty(LinkedList* list);
 
 #endif /* End of linkedList.h */

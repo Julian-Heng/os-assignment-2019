@@ -20,7 +20,6 @@ typedef LinkedListNode QueueNode;
 Queue* initQueue(int max);
 int enqueue(Queue* queue, void* val, int isMalloc);
 QueueNode* dequeue(Queue* queue, void** val, int* isMalloc);
-void peek(Queue* queue, void** val, int* isMalloc);
 int getQueueLength(Queue* queue);
 int getQueueMaxLength(Queue* queue);
 int getQueueRemainingCapacity(Queue* queue);
