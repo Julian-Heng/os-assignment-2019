@@ -13,15 +13,14 @@ int main(void)
 {
     int count = 0;
     int status = TRUE;
-    int (*funcs[5])(void) = {
+    int (*funcs[4])(void) = {
         testQueueConstructor,
         testQueueEnqueue,
         testQueueDequeue,
-        testQueuePeek,
         testQueueClear
     };
 
-    while (status && count < 5)
+    while (status && count < 4)
     {
         status = (*funcs[count++])();
     }
@@ -1003,62 +1002,6 @@ int testQueueDequeue()
             free(n);
             n = NULL;
         }
-
-        free(q->link);
-        q->link = NULL;
-
-        free(q);
-        q = NULL;
-    }
-
-    return status;
-}
-
-int testQueuePeek()
-{
-    Queue* q;
-
-    void* voidPtr;
-    int ret;
-    int i;
-
-    int status = TRUE;
-
-    voidPtr = NULL;
-    q = NULL;
-
-    header("Queue Peek");
-
-    if (status)
-    {
-        fprintf(stdout, "Testing peek() on an empty queue: ");
-        q = initQueue(5);
-        peek(q, &voidPtr, &ret);
-        status = printResult(! voidPtr &&
-                             ret == -1);
-
-        free(q->link);
-        q->link = NULL;
-
-        free(q);
-        q = NULL;
-    }
-
-    if (status)
-    {
-        fprintf(stdout, "Testing peek() on a populated queue: ");
-        q = initQueue(5);
-        i = 5;
-        enqueue(q, &i, FALSE);
-        peek(q, &voidPtr, &ret);
-        status = printResult(!! voidPtr &&
-                             *(int*)(voidPtr) == i &&
-                             ! ret);
-
-        voidPtr = NULL;
-
-        free(q->link->head);
-        q->link->head = NULL;
 
         free(q->link);
         q->link = NULL;
