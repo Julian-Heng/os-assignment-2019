@@ -26,7 +26,7 @@ int main(int argc, char** argv)
             f = initFile(argv[i], INT_MAX);
             readFile(f);
 
-            while (! IS_QUEUE_EMPTY(f->data))
+            while (! isQueueEmpty(f->data))
             {
                 n = dequeue(f->data, (void*)&str, &j);
                 fprintf(stdout, "%s\n", str);
