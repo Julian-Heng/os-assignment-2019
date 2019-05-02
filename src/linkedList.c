@@ -243,3 +243,11 @@ static void freeNode(LinkedListNode** node)
     free(*node);
     *node = NULL;
 }
+
+int isListEmpty(LinkedList* list)
+{
+    return (list &&
+            (! (list->head)) &&
+            (! (list->tail)) &&
+            list->length == 0) ? TRUE : FALSE;
+}
