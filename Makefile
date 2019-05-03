@@ -34,6 +34,7 @@ queue: linkedList
 file: $(OBJ)
 	$(CC) $(CFLAGS) -o $(OBJ)/file.o -c $(SRC)/file.c
 
+# Irrelevant to the assignment
 test: runtest_linkedList runtest_queue test_file runtest_scheduler
 
 runtest_linkedList: test_linkedList
