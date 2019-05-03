@@ -268,6 +268,14 @@ void* task(void* args)
                 addTask(readyQueue, taskFile, logFile);
                 numTasks++;
             }
+
+            /**
+             * Wake cpu thread using signal
+             * Using signal instead of broadcast because there is only
+             * one task available, thus only one thread can work on it
+             * Hence broadcast would not make sense in this context
+             **/
+            pthread_cond_signal(&queueFull);
         }
         else
         {
@@ -306,10 +314,14 @@ void* task(void* args)
                     }
                 }
             }
-        }
 
-        /* Wake cpu thread */
-        pthread_cond_broadcast(&queueFull);
+            /**
+             * Wake cpu thread using broadcast
+             * Using broadcast because it is confirmed that the
+             * readyQueue has 2 or more tasks available
+             **/
+            pthread_cond_broadcast(&queueFull);
+        }
 
         /* Release queue lock */
         pthread_mutex_unlock(&queueMutex);
