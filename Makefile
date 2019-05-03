@@ -126,19 +126,6 @@ docs: $(REPORT)
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
 	pdflatex -output-directory $(REPORT) ./docs/AssignmentDoc.tex
 
-dist: dist_clean docs
-	mkdir -p $(HOME)/OS/assignment
-	cp -r ./* $(HOME)/OS/assignment
-	( \
-		cd $(HOME)/OS/assignment; \
-		$(RM) -rv ./build; \
-		cd ..; \
-		zip -r 19473701_OS_Assignment.zip ./assignment -x \*.swp; \
-	)
-
-dist_clean:
-	$(RM) -rv $(HOME)/OS
-
 clean:
 	$(RM) -rv $(BUILD) $(REPORT) *_log
 
