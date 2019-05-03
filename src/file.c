@@ -1,7 +1,9 @@
 /**
  * Filename: file.c
  * Author:   Julian Heng (19473701)
- * Purpose:  Contains functions that deals with file input/output
+ * Purpose:  Contains functions that takes care of file input/output
+ *           Makes use of the queue data structure as a way to read
+ *           and write to a file
  **/
 
 #include <stdio.h>
@@ -16,6 +18,7 @@
 /**
  * Allocates memory for a file struct
  * Initialise all variables to default
+ *
  * Takes in a string for filename and an int for the maximum row
  * size of the file
  **/
@@ -49,7 +52,7 @@ void readFile(File* file)
         str = NULL;
 
         /**
-         * fgets scans a line from the file, including the newline,
+         * fgets() scans a line from the file, including the newline,
          * so we would have to replace the newline with a null
          * terminator to trim the string before enqueueing to the
          * file queue
