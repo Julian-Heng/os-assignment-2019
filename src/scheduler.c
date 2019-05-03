@@ -14,9 +14,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "scheduler.h"
 #include "file.h"
 #include "queue.h"
+#include "scheduler.h"
 
 #define FALSE 0
 #define TRUE !FALSE
@@ -117,10 +117,10 @@ int run(char* filename, int max)
      * which refers to the CPU id
      **/
     pthread_t taskThread;
-    pthread_t cpuThread[3];
+    pthread_t cpuThread[NUM_THREADS];
 
     SharedData sharedData;
-    CpuData cpuData[3];
+    CpuData cpuData[NUM_THREADS];
 
     Queue* readyQueue;
     File* taskFile;
@@ -225,28 +225,10 @@ void* task(void* args)
 
     numTasks = 0;
 
-    while (TRUE)
+    while (! isQueueEmpty(taskFile->data))
     {
         /* Acquire lock */
         pthread_mutex_lock(&queueMutex);
-
-        /* Check for exit condition */
-        if (isQueueEmpty(taskFile->data))
-        {
-            /* Release lock*/
-            pthread_mutex_unlock(&queueMutex);
-            time(&rawSecs);
-
-            /* Log task exiting */
-            pthread_mutex_lock(&logMutex);
-            STR_TIME(timeStr, rawSecs);
-            logger(logFile, TASK_TALLY, numTasks);
-            logger(logFile, TASK_TERMINATE, timeStr);
-            logger(logFile, "\n");
-            pthread_mutex_unlock(&logMutex);
-
-            pthread_exit(NULL);
-        }
 
         /* Different logic for a readyQueue with a max size of 1 */
         if (getQueueMaxLength(readyQueue) == 1)
@@ -326,6 +308,18 @@ void* task(void* args)
         /* Release queue lock */
         pthread_mutex_unlock(&queueMutex);
     }
+
+    time(&rawSecs);
+
+    /* Log task exiting */
+    pthread_mutex_lock(&logMutex);
+    STR_TIME(timeStr, rawSecs);
+    logger(logFile, TASK_TALLY, numTasks);
+    logger(logFile, TASK_TERMINATE, timeStr);
+    logger(logFile, "\n");
+    pthread_mutex_unlock(&logMutex);
+
+    pthread_exit(NULL);
 }
 
 /**
@@ -360,7 +354,13 @@ void* cpu(void* args)
         /* Acquire queue lock */
         pthread_mutex_lock(&queueMutex);
 
-        /* Check for exit condition */
+        /**
+         * Check for exit condition
+         * We do a check here instead of the for loop because we need
+         * to have the lock in order to check for the exit condition.
+         * Caveat is that the return statement is not at the end of
+         * the function
+         **/
         if (isQueueEmpty(taskFile->data) && isQueueEmpty(readyQueue))
         {
             /* Release lock*/
@@ -498,6 +498,8 @@ void addTask(Queue* readyQueue, File* taskFile, File* logFile)
 /**
  * Function to log common information to the log file
  * Logs task number and arrival time
+ *
+ * This function is assumed to have the logMutex lock
  **/
 void logCpuStat(File* logFile, int id, Task* task)
 {
@@ -512,6 +514,8 @@ void logCpuStat(File* logFile, int id, Task* task)
 /**
  * Adds a line to the log file
  * Takes in the same arguments in the style of a printf function
+ *
+ * This function is assumed to have the logMutex lock
  **/
 void logger(File* file, char* format, ...)
 {
@@ -556,7 +560,8 @@ int sanitizeTaskFile(File* file)
         /* Add valid entries to a new file queue */
         while ((node = dequeue(file->data, (void*)&str, &isMalloc)))
         {
-            if (sscanf(str, TASK_SCAN, &id, &time) == 2)
+            if (sscanf(str, TASK_SCAN, &id, &time) == 2 &&
+                time > 0 && 51 > time)
             {
                 enqueue(valid, str, isMalloc);
             }
