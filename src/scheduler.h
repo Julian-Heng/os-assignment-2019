@@ -77,6 +77,7 @@ typedef struct CpuData
     int id;
 } CpuData;
 
+/* Macros */
 #define INT_REAL_DIV(a, b) \
     ((double)(a) / (double)(b))
 
@@ -84,7 +85,7 @@ typedef struct CpuData
     strftime((str), TIME_LENGTH, "%H:%M:%S", localtime(&(secs)))
 
 #define USAGE(exe) \
-    fprintf(stderr, "Usage: %s [task-file] [2-10]\n", exe);
+    fprintf(stderr, "Usage: %s [task-file] [2-10]\n", (exe));
 
 /* Function prototypes */
 int run(char* filename, int max);
